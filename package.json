@@ -1,0 +1,19 @@
+{
+  "name": "rawhabit-ai",
+  "private": true,
+  "packageManager": "bun@1.2.19",
+  "engines": {
+    "bun": ">=1.2.19"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter '@rawhabit/client' --filter '@rawhabit/server' --parallel dev",
+    "dev:client": "bun --filter '@rawhabit/client' dev",
+    "dev:server": "bun --filter '@rawhabit/server' dev",
+    "build": "bun --filter '@rawhabit/client' build",
+    "typecheck": "bun --filter '*' typecheck"
+  }
+}
