@@ -1,278 +1,102 @@
-# RawHabit AI — One-Week Hackathon PRD
+# RawHabit AI — Product Requirements Document
 
-## Product snapshot
+**Hackathon:** OpenAI Build Week · Apps for Your Life  
+**Product:** RawHabit AI  
+**Scope:** Web-only, in-memory MVP
 
-**RawHabit AI** is a zero-filter habit accountability app where people record a 15–30 second daily video or audio check-in, get an immediate tactical AI response, and share real progress on a social feed. Completing a challenge changes the user from an active challenger to a **Graduate**, unlocking a free-form victory update and an AI-generated transformation report.
+## Product summary
 
-**Category:** Apps for Your Life — OpenAI Hackathon  
-**Scope:** One-week, web-only MVP  
-**Core loop:** Record → AI process → feed update → complete challenge → Graduate unlock
+RawHabit is a privacy-first social habit app for the unpolished middle of change. People record a 15–30 second daily audio/video check-in, receive a concrete GPT-5.6 accountability response, and choose whether to share a safe progress update. Templates form visible communities: people can see who is building the same habit, clone a challenge, and join its participant circle without exposing their raw check-ins.
 
-## Problem and opportunity
+**Promise:** Be raw with your coach; share progress with your people.
 
-Habit trackers are good at counting days but poor at meeting someone in the messy middle: a craving, a relapse, or a difficult workout day. These moments are often hidden rather than reflected on. RawHabit makes a brief honest check-in the main interaction, then returns a single practical next step and makes progress visible when the user chooses to share it.
+## Problem
 
-## Product goals
+Most habit trackers count streaks but do not help in the moment someone is avoiding a workout, craving a cigarette, or reaching for their phone at midnight. Purely public social apps can make those moments feel performative. RawHabit gives people a private place to be honest, then lets them participate in a community on their terms.
 
-1. Demonstrate a complete recorded-media-to-AI-coach experience.
-2. Turn the completed AI result into a visible public feed item with clear challenge progress.
-3. Demonstrate the emotional reward of completion through a Graduate state and transformation report.
-4. Keep implementation narrow enough to ship and demo confidently in one week.
+## Target user
 
-### Success criteria
+Maya, 27, is trying to quit smoking. After a craving, she records a candid 20-second check-in. The Accountability Agent gives her one immediate next action. Maya can keep it private, share a short AI-assisted progress caption, or join an optional visible group of people doing the same 30-day challenge.
 
-| Moment | Demo success condition |
-| --- | --- |
-| Setup | Select a habit and start a challenge in under 30 seconds. |
-| Logging | Record, submit, and view a coach response in one flow. |
-| AI | Transcription and structured coaching appear within a typical demo-friendly wait time. |
-| Social proof | New check-in appears on the feed with `Day X of Y` progress. |
-| Completion | One action demonstrates the Graduate transition, victory post, and AI report. |
+## Goals
 
-## Scope decisions
+1. Make daily honesty faster and more useful than filling in a habit tracker.
+2. Demonstrate GPT-5.6 as an accountable, tool-using planning agent—not just a chat box.
+3. Create social motivation through template communities while keeping vulnerable media private by default.
+4. Make completion meaningful: Graduate status unlocks reflection and free-form victory posts.
 
-### In scope
+## Core loop
 
-- Hardcoded single-user session; no signup, login, or multi-user authorization.
-- Selection from pre-configured challenge templates, starting with **30-Day Quit Smoking**.
-- Browser-based 15–30 second video/audio recording.
-- Audio extraction, speech-to-text, structured GPT coaching, and feed card creation.
-- A public-style, seeded social feed plus the active user’s new posts.
-- Developer-only shortcut that completes the challenge for presentation.
-- Graduate state, free-form victory post, and transformation report.
-- Template clone controls as an interaction/demo surface.
-
-### Explicitly out of scope
-
-- Real authentication, profiles, follow relationships, comments, likes, notifications, or DMs.
-- Persistent multi-user data, production media hosting, moderation tooling, or native apps.
-- Arbitrary challenge authoring; templates are predefined for this build.
-- Medical diagnosis, treatment, or crisis intervention.
-
-## Primary user and demo persona
-
-**Maya**, 27, is quitting smoking. She wants to acknowledge a difficult moment without writing a polished post. She chooses the 30-day template, records an honest update after a craving, gets a concrete action based on her strategy, and sees her progress alongside other challenge stories. At completion, RawHabit celebrates the process rather than just the streak.
+```text
+Choose a template → join its community → record a private raw check-in
+→ transcribe → Saboteur assessment → Coach plan/action card
+→ optionally share a safe progress update → complete → Graduate report/post
+```
 
 ## Functional requirements
 
-### 1. Challenge selection and strategy setup
+### 1. Challenge templates and community
 
-The home screen presents 2–3 predefined challenge cards. Each includes a name, duration, short description, and strategy rules. The primary demo template is **30-Day Quit Smoking**.
+The MVP includes three templates:
 
-**Example preconfigured rules**
+- 30-Day Quit Smoking
+- 21-Day Gym Consistency
+- 14-Day Screen-Free Nights
 
-- After a craving, drink water and take a 10-minute walk.
-- Text an accountability contact before buying cigarettes.
-- If a slip happens, record it honestly and restart the next day without self-judgment.
+Each template includes a duration, description, and strategy rules. A template card and challenge dashboard show an avatar stack and participant count: “Alex, Jordan, and 28 others are building this.” Selecting it opens a **People building this habit** sheet with only opted-in participants.
 
-**Acceptance criteria**
+Users can clone a public template from a feed post. The resulting challenge stores source attribution, e.g. “Initiated by Alex’s Day 8 check-in.” Cloning does not reveal Alex’s raw media, transcript, or AI assessment.
 
-- Selecting a template creates the hardcoded user’s active challenge state.
-- The active challenge displays title, progress, current day, total days, and strategy rules.
-- A challenge starts on Day 1 and sends the user to the daily logging view.
+### 2. Daily raw check-in
 
-### 2. Daily Raw Logger
+Users record 15–30 seconds with browser `MediaRecorder`, preview or retake it, and submit it as private by default. Audio-only and a development transcript fallback support demo reliability. Users may explicitly publish a safe caption/progress card after reviewing the agent response.
 
-The user can capture a brief, unedited check-in in the browser.
+### 3. Accountability Agent
 
-**Flow**
+The server transcribes audio with `whisper-1`, then calls GPT-5.6 through the Responses API. The experience has two explainable stages in one awaited agent response:
 
-1. Select **Record today’s raw log**.
-2. Browser requests camera/microphone access.
-3. Record between 15 and 30 seconds; show elapsed time and stop control.
-4. Preview, retake, or submit the recording.
-5. Show a processing state while AI results arrive.
+- **Saboteur:** identifies friction patterns, excuses, and a private support-routing label (`low`, `medium`, `high`, `critical`).
+- **Coach:** asks a concise Socratic question, gives one practical strategy-compatible action, and may propose a temporary 24-hour action card or protocol adjustment.
 
-**Acceptance criteria**
+The UI returns one combined result after both stages finish. This is foreground work during submission, not a background job, keeping the MVP simple and demoable.
 
-- Use the browser `MediaRecorder` API.
-- Support audio-only fallback when camera permission is unavailable.
-- Show recording duration and block final submit before 15 seconds in the normal UI.
-- Allow a retake before submission.
-- For demo resilience, provide a development sample recording/transcript fallback when media permissions or an API key are absent.
+### 4. Agent actions and consent
 
-### 3. OpenAI audio pipeline
+The model proposes actions through strict function schemas; the server validates and executes them. An action card may be created automatically only for the current user and expires after 24 hours. Any schedule/grace-day change requires user confirmation.
 
-On submission, the server receives media, extracts its audio track, and runs the following pipeline:
+There is no Discord/community-alert integration in this MVP. For high-support moments, the user gets private immediate-support guidance and may optionally publish a generic **Encouragement welcome** signal. Public posts never display a risk level, private transcript evidence, or diagnostic claim.
 
-```text
-Browser recording → Express upload endpoint → audio extraction
-→ OpenAI speech-to-text → GPT-4o-mini → validated coach result → feed item
-```
+### 5. Public feed
 
-**Inputs to coaching**
+The feed begins with fictional seeded cards and includes explicitly public user progress posts. Cards show challenge name, Day X of Y, progress, a short coach note, source attribution when cloned, and a template-community avatar/count control. It does not show raw risk data.
 
-- Current transcript.
-- Selected challenge name.
-- Current day and total days.
-- Pre-configured strategy rules.
+### 6. Completion and Graduate status
 
-**Required coach response**
-
-```ts
-type RiskLevel = "low" | "medium" | "high" | "critical";
-
-interface AICoachResponse {
-  riskLevel: RiskLevel;
-  caption: string;
-  coachMessage: string;
-  suggestedAction?: string;
-}
-```
-
-**Behavior requirements**
-
-- The caption is a concise, respectful summary suitable for a feed card.
-- The coach message is empathetic and contains one direct, achievable action.
-- Risk level is displayed as a private-to-the-user support signal, not a diagnosis.
-- Output must be parsed and validated server-side before client display.
-- On API failure, display a friendly fallback coach message and permit retry; do not lose the recording draft.
-
-### 4. Feed update and template clone
-
-After AI processing, the check-in becomes a feed item. Seeded items make the social feed feel populated before the user records their own entry.
-
-**Feed card contents**
-
-- Challenge name and creator display name.
-- Caption and optional video preview.
-- `Day X of Y` text and progress bar.
-- AI coach snippet (shortened for the feed).
-- **Clone template** action.
-
-**Acceptance criteria**
-
-- A completed daily submission appears at the top of the active feed without a page refresh.
-- Feed data includes seeded cards plus in-memory active-user cards.
-- Clone template selects that template for the single user and starts a fresh Day 1 state.
-
-### 5. Challenge completion and Graduate unlock
-
-Completion is a first-class product moment. For hackathon presentation, the active challenge screen includes a clearly labelled **Dev Cheat: Complete Challenge** action.
-
-**Completion flow**
-
-1. The developer activates the cheat button during the demo.
-2. Current day becomes total days; active challenge changes to completed.
-3. User status changes to **Graduate**.
-4. App requests or shows a generated **AI Transformation Report**.
-5. The Graduate composer unlocks for a free-form victory post.
-6. Publishing the post adds a Graduate feed card.
-
-**Acceptance criteria**
-
-- The cheat button is visually separated from normal user controls and marked as demo/dev-only.
-- Completion state persists for the browser session.
-- Graduate composer permits text plus an optional existing media attachment for MVP.
-- A user cannot access the Graduate composer while a challenge is active.
-- Transformation report is generated from available check-in summaries; a polished deterministic fallback is shown if AI is unavailable.
-
-### 6. AI Transformation Report
-
-The report turns repeated check-ins into a lightweight story of progress. It should feel reflective, not clinical.
-
-**Report fields**
-
-- Challenge completed and total duration.
-- “What changed”: 2–3 short themes derived from logs.
-- “Strengths you practiced”: 2–3 specific behaviors.
-- “Carry forward”: one concrete next habit.
-
-**Acceptance criteria**
-
-- Report is under 180 words and readable on one mobile viewport.
-- It uses supportive language and does not make medical or diagnostic claims.
-- User can post a free-form victory message after viewing the report.
-
-## UX and screen map
-
-| Screen | Main content | Primary action |
-| --- | --- | --- |
-| Challenge picker | Preconfigured habit templates and rules | Start challenge |
-| Today / Active challenge | Day count, progress, strategy rules | Record raw log |
-| Recorder | Media preview, timer, retake | Submit check-in |
-| AI result | Caption, risk signal, coach action | Add to feed |
-| Feed | Seeded and newly created log cards | Clone template |
-| Graduate | Transformation report and unlocked composer | Publish victory post |
-
-## State model
-
-```text
-No active challenge
-  → Active challenge (Day 1…Day N)
-  → Daily recording submitted
-  → AI result saved and feed updated
-  → Completed challenge
-  → Graduate unlocked
-  → Victory post published
-```
-
-## Technical architecture
-
-### Bun monorepo
-
-| Workspace | Responsibility |
-| --- | --- |
-| `packages/shared` | Shared TypeScript contracts: `RiskLevel`, `CheckInPayload`, `AICoachResponse`, plus goal/feed state types as needed. |
-| `apps/client` | Pure React, Vite, Tailwind CSS, `MediaRecorder`, local state, and UI flows. |
-| `apps/server` | Bun, Express, OpenAI SDK, upload/processing endpoints, and in-memory MVP store. |
-
-### Suggested API endpoints
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/templates` | Return preconfigured challenges. |
-| `POST` | `/api/challenge/start` | Select the single user’s active template. |
-| `GET` | `/api/challenge` | Return current challenge and Graduate state. |
-| `POST` | `/api/check-ins` | Accept media and run the AI pipeline. |
-| `GET` | `/api/feed` | Return seeded plus active-user feed items. |
-| `POST` | `/api/challenge/dev-complete` | Demo-only completion transition. |
-| `POST` | `/api/graduate/report` | Produce transformation report. |
-| `POST` | `/api/graduate/post` | Publish a free-form Graduate post. |
-
-### Data structures (in memory for MVP)
-
-- `ChallengeTemplate`: id, title, totalDays, description, strategyRules.
-- `ActiveChallenge`: templateId, currentDay, status (`active | completed`), startedAt.
-- `CheckIn`: id, day, mediaUrl/localBlobRef, transcript, caption, coachResult, createdAt.
-- `FeedItem`: id, kind (`daily_log | graduate_post`), progress, caption, media, createdAt.
-- `TransformationReport`: themes, strengths, carryForward, generatedAt.
+The demo-only Dev Cheat completes an active challenge. Completion changes the participant to Graduate, generates a short transformation report from their summaries, and unlocks the victory composer. A Graduate post appears in the public feed when the user publishes it.
 
 ## Safety and privacy boundaries
 
-- Check-ins should be private by default in the demo; the visible feed can use seeded, consented demo content and explicit publish actions.
-- The AI gives support and a next action, never medical diagnosis or treatment advice.
-- For high or critical risk language, show a gentle prompt to contact a trusted person or local emergency/crisis support if the user may be in immediate danger.
-- Do not claim that the model has detected an emergency or a health condition.
-- Store no production credentials in the client. The OpenAI key remains server-only.
+- Raw media, transcript, assessment evidence, and risk labels are private by default.
+- Template-participant visibility is opt-in and is independent of feed visibility.
+- The app is supportive, not diagnostic; it makes no treatment or emergency-detection claims.
+- High/critical language receives a gentle prompt to contact a trusted person or local emergency/crisis service if there may be immediate danger.
+- The model cannot autonomously disclose data or make external social posts.
 
-## One-week build plan
+## MVP boundaries
 
-| Day | Deliverable |
-| --- | --- |
-| 1 | Bun workspace, shared contracts, templates, and basic client navigation. |
-| 2 | Active challenge UI, progress state, and browser recorder with sample fallback. |
-| 3 | Express upload endpoint, speech-to-text integration, and `gpt-4o-mini` structured coaching. |
-| 4 | Result view, feed update, and seeded social cards. |
-| 5 | Dev completion transition, Graduate screen, report, and victory composer. |
-| 6 | Error states, responsive polish, demo data, and end-to-end testing. |
-| 7 | Record demo video, refine Devpost description, and submit. |
+Included: hardcoded session, in-memory data, seeded fictional feed, local media storage, development fallback, dev completion control, and an optional generic public encouragement signal.
 
-## Demo script
+Excluded: authentication, database persistence, real DMs/comments/likes, real moderation, Discord integration, medical/crisis response, and automatic public sharing.
 
-1. Pick **30-Day Quit Smoking** and show its preconfigured backup rules.
-2. Record a 15–30 second candid check-in about a craving.
-3. Show the transcript, risk level, short caption, and tactical coaching action.
-4. Publish it; show the new feed card with `Day 1 of 30` progress.
-5. Select **Dev Cheat: Complete Challenge**.
-6. Reveal Graduate status and the AI Transformation Report.
-7. Write and publish a short free-form victory post.
-8. Close on the updated feed showing both consistent daily accountability and a completion celebration.
+## Demo success criteria
 
-## Devpost copy starter
+1. Start a template and view its participant community.
+2. Record or use the transcript fallback and receive a Saboteur/Coach response.
+3. Display and complete a 24-hour action card.
+4. Publish a harmless progress update and show it atop the feed.
+5. Clone a template and show its initiator attribution plus community count.
+6. Use Dev Cheat, generate the Graduate report, and publish a victory post.
 
-**Tagline:** Raw daily check-ins, tactical AI coaching, and a Graduate moment that celebrates the work behind real change.
+## Build Week submission readiness
 
-**Built with:** Bun, React, Vite, Tailwind CSS, Express, TypeScript, OpenAI API.
-
-**Short description:** RawHabit AI turns a 30-second honest check-in into a practical next step. Record the hard moment, get immediate AI coaching, share progress when you choose, and graduate with a transformation report when your challenge is complete.
+The delivered project must be runnable with sample/demo data, use Codex and GPT-5.6, document setup in a README, and have a sub-three-minute demo video that shows the app working and explains the Codex/GPT-5.6 use.
