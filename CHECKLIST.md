@@ -83,14 +83,14 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P0 — Graduate loop
 
-- [ ] Guard `POST /api/challenge/dev-complete` to non-production or `ALLOW_DEV_CHEAT=true`.
-- [ ] Visually separate the Dev Cheat from normal controls.
-- [ ] Complete the challenge: set final day, completed status, and Graduate profile status.
-- [ ] Implement `POST /api/graduate/report` with GPT-5.6 summary plus deterministic fallback.
-- [ ] Keep report below 180 words and non-clinical.
-- [ ] Unlock the Graduate composer only after completion.
-- [ ] Implement validated `POST /api/graduate/post` (1–500 characters).
-- [ ] Confirm victory post appears at the top of the feed.
+- [x] Guard `POST /api/challenge/dev-complete` to non-production or `ALLOW_DEV_CHEAT=true`.
+- [x] Visually separate the Dev Cheat from normal controls.
+- [x] Complete the challenge: set final day, completed status, and Graduate profile status.
+- [x] Implement `POST /api/graduate/report` with GPT-5.6 summary plus deterministic fallback.
+- [x] Keep report below 180 words and non-clinical.
+- [x] Unlock the Graduate composer only after completion.
+- [x] Implement validated `POST /api/graduate/post` (1–500 characters).
+- [x] Confirm victory post appears at the top of the feed.
 
 ## P1 — Polish and resilience
 

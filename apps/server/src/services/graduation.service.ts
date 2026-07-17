@@ -1,6 +1,7 @@
 import type { FeedItem, TransformationReport } from "@rawhabit/shared";
 import { env } from "../config/env";
 import { habitRepository } from "../repositories/habit.repository";
+import { aiService } from "./ai.service";
 
 export class GraduationService {
   complete() {
@@ -9,10 +10,10 @@ export class GraduationService {
     if (!env.allowDevCheat) return { error: "DEV_CHEAT_DISABLED" as const };
     return { session: habitRepository.completeChallenge(template.totalDays)! };
   }
-  createReport() {
+  async createReport() {
     const template = habitRepository.getActiveTemplate();
     if (!template || habitRepository.getSession().user.status !== "graduate") return null;
-    const report: TransformationReport = { challengeTitle: template.title, totalDays: template.totalDays, themes: ["You made space for honest check-ins.", "You practiced choosing a pause before the old pattern."], strengths: ["Consistency through hard moments", "Using your backup strategy"], carryForward: template.strategyRules[0], generatedAt: new Date().toISOString() };
+    const report = await aiService.transformationReport({ title: template.title, totalDays: template.totalDays, checkIns: habitRepository.listCheckIns().map((checkIn) => ({ caption: checkIn.caption, coachMessage: checkIn.coach.coachMessage })) });
     return habitRepository.saveReport(report);
   }
   publish(caption: string) {

@@ -11,8 +11,8 @@ export const graduationController = {
     }
     return response.json(result.session);
   },
-  report: (_request: Request, response: Response) => {
-    const report = graduationService.createReport();
+  report: async (_request: Request, response: Response) => {
+    const report = await graduationService.createReport();
     return report ? response.json(report) : sendError(response, 409, "Graduate status is required.", "INVALID_STATE");
   },
   publish: (request: Request, response: Response) => {

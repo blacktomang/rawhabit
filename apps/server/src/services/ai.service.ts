@@ -6,6 +6,7 @@ import type {
   HabitProtocol,
   SaboteurAssessment,
   CoachPlan,
+  TransformationReport,
 } from "@rawhabit/shared";
 import { env } from "../config/env";
 
@@ -107,6 +108,26 @@ export class AiService {
     }
   }
 
+  async transformationReport(input: { title: string; totalDays: number; checkIns: Array<{ caption: string; coachMessage: string }> }): Promise<TransformationReport> {
+    const fallback = this.fallbackReport(input.title, input.totalDays);
+    if (!this.client) return fallback;
+    try {
+      const response = await this.client.responses.create({
+        model: env.coachingModel,
+        instructions: "Write a warm, non-clinical habit reflection. Do not diagnose, make medical claims, or invent achievements. Keep every field concise; the combined report must stay under 180 words.",
+        input: JSON.stringify({ challengeTitle: input.title, totalDays: input.totalDays, checkInSummaries: input.checkIns.slice(0, 30) }),
+        text: { format: { type: "json_schema", name: "rawhabit_transformation_report", strict: true, schema: { type: "object", additionalProperties: false, properties: { themes: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 3 }, strengths: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 3 }, carryForward: { type: "string" } }, required: ["themes", "strengths", "carryForward"] } } },
+      });
+      const data = JSON.parse(response.output_text || "{}") as Partial<Pick<TransformationReport, "themes" | "strengths" | "carryForward">>;
+      if (!this.isStringList(data.themes) || !this.isStringList(data.strengths) || !this.isText(data.carryForward)) throw new Error("Invalid transformation report");
+      const report: TransformationReport = { challengeTitle: input.title, totalDays: input.totalDays, themes: data.themes.slice(0, 3).map((item) => item.slice(0, 180)), strengths: data.strengths.slice(0, 3).map((item) => item.slice(0, 180)), carryForward: data.carryForward.slice(0, 220), generatedAt: new Date().toISOString() };
+      return this.wordCount(report) <= 180 ? report : fallback;
+    } catch (cause) {
+      console.warn("Transformation report fallback:", cause);
+      return fallback;
+    }
+  }
+
   private validateCoachRun(value: unknown, mode: AiMode): CoachingRun {
     if (!value || typeof value !== "object") throw new Error("Invalid coach response");
     const { assessment, plan } = value as { assessment?: Partial<SaboteurAssessment>; plan?: Partial<CoachPlan> };
@@ -120,6 +141,11 @@ export class AiService {
 
   private isText(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
   private isStringList(value: unknown): value is string[] { return Array.isArray(value) && value.every((item) => this.isText(item)); }
+  private wordCount(report: Pick<TransformationReport, "themes" | "strengths" | "carryForward">) { return [...report.themes, ...report.strengths, report.carryForward].join(" ").trim().split(/\s+/).filter(Boolean).length; }
+
+  private fallbackReport(title: string, totalDays: number): TransformationReport {
+    return { challengeTitle: title, totalDays, themes: ["You made space for honest check-ins.", "You practiced choosing a pause before the old pattern."], strengths: ["Consistency through hard moments", "Using your backup strategy"], carryForward: "Keep the next step small, visible, and easy to begin.", generatedAt: new Date().toISOString() };
+  }
 
   private fallbackCoach(
     transcript: string,
