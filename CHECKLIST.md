@@ -94,11 +94,11 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P1 — Polish and resilience
 
-- [ ] Add loading/disabled/error states for every mutation.
-- [ ] Test narrow mobile layout, desktop layout, keyboard controls, and non-color status labels.
-- [ ] Use clearly fictional seed names/content only.
+- [x] Add loading/disabled/error states for every mutation.
+- [x] Test narrow mobile layout, desktop layout, keyboard controls, and non-color status labels.
+- [x] Use clearly fictional seed names/content only.
 - [x] Add empty states for no active challenge, no participants, and no feed items.
-- [ ] Add SSE reconnect with polling fallback.
+- [x] Add SSE reconnect with polling fallback.
 - [x] Expire stale action cards on read and show the expiry clearly.
 - [x] Add request IDs and agent-action audit logs to server output.
 
@@ -119,7 +119,7 @@ This is the implementation order and test plan. Each item is small enough to com
 ## Build Week handoff
 
 - [ ] Keep the repository public with relevant license, or share private access with `testing@devpost.com` and `build-week-event@openai.com`.
-- [ ] Document sample/demo data and all setup steps in the README.
+- [x] Document sample/demo data and all setup steps in the README.
 - [ ] Record a public YouTube video under three minutes showing the project working.
 - [ ] Include voiceover explaining where Codex accelerated development and how GPT-5.6 powers the agent flow.
 - [ ] Add repository URL, Apps for Your Life category, and the `/feedback` Codex session ID to Devpost.
