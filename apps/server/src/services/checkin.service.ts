@@ -1,4 +1,4 @@
-import type { CheckIn, FeedItem, Visibility } from "@rawhabit/shared";
+import type { ActionCard, CheckIn, FeedItem, Visibility } from "@rawhabit/shared";
 import { readMediaBody } from "../lib/http";
 import { habitRepository } from "../repositories/habit.repository";
 import { aiService } from "./ai.service";
@@ -29,12 +29,14 @@ export class CheckInService {
     const coaching = await aiService.coach(transcript, template, active.currentDay, habitRepository.getPreference());
     const checkIn: CheckIn = { id: crypto.randomUUID(), challengeTemplateId: template.id, day: active.currentDay, transcript, caption: coaching.result.caption, visibility: input.visibility, mediaUrl: input.mediaUrl, coach: coaching.result, aiRun: { transcription: transcriptionMode, coaching: coaching.mode }, createdAt: new Date().toISOString() };
     habitRepository.addCheckIn(checkIn);
+    const actionCard: ActionCard = { id: crypto.randomUUID(), checkInId: checkIn.id, title: "Your next small step", instruction: coaching.result.suggestedAction ?? template.strategyRules[0], expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: "active" };
+    habitRepository.setActionCard(actionCard);
     let feedItem: FeedItem | undefined;
     if (input.visibility === "public") {
       feedItem = { id: crypto.randomUUID(), kind: "daily_log", authorName: habitRepository.getSession().user.displayName, templateId: template.id, challengeTitle: template.title, currentDay: active.currentDay, totalDays: template.totalDays, caption: coaching.result.caption, coachSnippet: coaching.result.coachMessage, mediaUrl: input.mediaUrl, createdAt: checkIn.createdAt };
       habitRepository.addFeedItem(feedItem);
     }
-    return { checkIn, feedItem };
+    return { checkIn, feedItem, actionCard };
   }
 }
 

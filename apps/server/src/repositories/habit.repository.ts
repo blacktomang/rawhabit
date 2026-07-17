@@ -35,6 +35,14 @@ export class HabitRepository {
   getActiveTemplate() { return this.session.activeChallenge && this.findTemplate(this.session.activeChallenge.templateId); }
   getPreference() { return this.preferences.get(this.session.user.id)!; }
   savePreference(preference: AgentPreference) { this.preferences.set(this.session.user.id, preference); return preference; }
+  recordActionFeedback(input: { action: string; outcome: "accepted" | "dismissed" | "unhelpful" | "alternative_requested"; note?: string }) {
+    const current = this.getPreference();
+    const accepted = input.outcome === "accepted" ? [...new Set([...current.acceptedActionTypes, input.action])] : current.acceptedActionTypes;
+    const rejected = input.outcome === "dismissed" || input.outcome === "unhelpful" ? [...new Set([...current.rejectedActionTypes, input.action])] : current.rejectedActionTypes;
+    const constraints = input.note && input.outcome !== "accepted" ? [...current.constraints, input.note].slice(-8) : current.constraints;
+    const recentFeedback = [...current.recentFeedback, `${input.outcome}: ${input.action}${input.note ? ` (${input.note})` : ""}`].slice(-8);
+    return this.savePreference({ ...current, acceptedActionTypes: accepted, rejectedActionTypes: rejected, constraints, recentFeedback });
+  }
 
   getCommunity(templateId: string): TemplateCommunity {
     const listed = this.participants.filter((participant) => participant.templateId === templateId && participant.visibility === "listed");

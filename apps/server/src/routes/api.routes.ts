@@ -3,6 +3,7 @@ import { challengeController } from "../controllers/challenge.controller";
 import { checkInController } from "../controllers/checkin.controller";
 import { graduationController } from "../controllers/graduation.controller";
 import { mediaController } from "../controllers/media.controller";
+import { agentController } from "../controllers/agent.controller";
 
 export const apiRouter = Router();
 
@@ -15,6 +16,8 @@ apiRouter.post("/challenge/start", challengeController.start);
 apiRouter.post("/templates/:templateId/clone", challengeController.clone);
 apiRouter.post("/feed/:feedItemId/clone", challengeController.cloneFromFeed);
 apiRouter.post("/check-ins", checkInController.create);
+apiRouter.post("/check-ins/:id/feedback", agentController.feedback);
+apiRouter.post("/action-cards/:id/complete", agentController.completeActionCard);
 apiRouter.post("/media", mediaController.uploadVideo);
 apiRouter.post("/challenge/dev-complete", graduationController.complete);
 apiRouter.post("/graduate/report", graduationController.report);
