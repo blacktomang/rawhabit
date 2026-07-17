@@ -39,15 +39,33 @@ export type ChallengeStatus = "active" | "completed" | "paused";
 export type FeedItemKind = "daily_log" | "graduate_post";
 export type AgentActionKind = "inject_action_card" | "mutate_challenge_protocol" | "request_encouragement";
 export type AgentActionStatus = "proposed" | "awaiting_confirmation" | "executed" | "rejected" | "expired";
+export type ChangeDirection = "build" | "reduce";
+export type EnvironmentPrinciple = "make_obvious" | "make_easy" | "make_invisible" | "make_difficult";
 
 export interface ChallengeTemplate {
   id: string;
   source: "official";
   version: number;
+  direction: ChangeDirection;
+  protocolSetup: HabitProtocolSetup;
   title: string;
   totalDays: number;
   description: string;
   strategyRules: string[];
+}
+
+export interface HabitProtocolSetup {
+  primaryPrinciple: EnvironmentPrinciple;
+  questions: Array<{ id: string; label: string; options: string[] }>;
+}
+
+export interface HabitProtocol {
+  templateId: string;
+  trigger: string;
+  environmentChange: string;
+  minimumAction: string;
+  primaryPrinciple: EnvironmentPrinciple;
+  updatedAt: string;
 }
 
 export interface ChallengeInitiator {
@@ -149,6 +167,7 @@ export interface SessionState {
   user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean };
   activeChallenge: ActiveChallenge | null;
   activeActionCard: ActionCard | null;
+  habitProtocol: HabitProtocol | null;
   report: TransformationReport | null;
 }
 ```
@@ -157,7 +176,7 @@ export interface SessionState {
 
 ## 4. Accountability Agent
 
-The check-in request awaits transcription and one GPT-5.6 Responses API call. It returns a strict JSON result containing `SaboteurAssessment`, `CoachPlan`, and zero or more action proposals. This is two conceptual roles in one call, avoiding a second round trip.
+Starting/cloning a challenge is deterministic: the client renders that Official template’s `protocolSetup.questions`, saves the user’s answers as a `HabitProtocol`, and never asks GPT-5.6 to generate onboarding questions. The check-in request later awaits transcription and one GPT-5.6 Responses API call, including the saved protocol plus explicit feedback/preferences.
 
 ```text
 media/demo transcript → whisper-1 → GPT-5.6 assessment + coach plan
@@ -183,6 +202,7 @@ The model has these narrow function tools:
 | `GET` | `/api/feed` | Public seeded/user `FeedItem[]`, newest first |
 | `POST` | `/api/challenge/start` | `{ templateId }` → Day 1 `SessionState` |
 | `POST` | `/api/feed/:feedItemId/clone` | Start source template and save `ChallengeInitiator` |
+| `POST` | `/api/challenge/protocol` | Save the user-edited Habit Protocol after Official setup |
 | `POST` | `/api/media` | Raw WebM/MP4 storage; 15 MB maximum |
 | `POST` | `/api/check-ins` | Media or demo transcript; returns check-in, card, pending action |
 | `POST` | `/api/check-ins/:id/publish` | Explicitly creates public feed item |
@@ -206,9 +226,11 @@ App
 │     └─ TemplateCommunityButton
 └─ HabitRail
    ├─ TemplatePicker
+   │  └─ HabitProtocolSetup (pre-authored questions, not AI-generated)
    ├─ ChallengeDashboard
    │  ├─ ProgressMeter
    │  ├─ ChallengeLineage
+   │  ├─ HabitProtocolCard (user-editable)
    │  ├─ TemplateCommunityButton (avatar stack + count)
    │  ├─ TemplateCommunitySheet
    │  └─ ActiveActionCard

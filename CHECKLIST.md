@@ -22,11 +22,16 @@ This is the implementation order and test plan. Each item is small enough to com
 
 - [ ] Seed the versioned **RawHabit Official** Quit Smoking, Gym Consistency, and Screen-Free Nights templates.
 - [ ] Render an Official badge; do not permit community editing of official strategy rules in the MVP.
+- [ ] Define each Official template’s fixed 2–3 Habit Protocol setup questions and answer options.
+- [ ] Mark templates as `build` or `reduce`; map the default protocol to the appropriate environment principle.
 - [ ] Seed opted-in fictional template participants and avatar placeholders.
 - [ ] Implement `GET /api/templates` and `GET /api/templates/:templateId/community`.
 - [ ] Implement `POST /api/challenge/start` at Day 1.
 - [ ] Replace template-only cloning with `POST /api/feed/:feedItemId/clone`.
 - [ ] Save `ChallengeInitiator` from the source public feed item.
+- [ ] Render fixed Habit Protocol setup after both start and clone; do not call the agent for onboarding questions.
+- [ ] Save a separate, user-owned Habit Protocol; do not copy the initiator’s protocol on clone.
+- [ ] Add a user-editable Habit Protocol card on the active dashboard.
 - [ ] Add the current user to the template community only after visibility consent.
 - [ ] Render avatar stack, participant count, and “People building this habit” sheet.
 - [ ] Show “Initiated by …” on a cloned challenge.
@@ -52,6 +57,7 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Provide `GET /api/check-in-jobs/:jobId` polling fallback when SSE disconnects.
 - [ ] Send audio to `whisper-1`; preserve a deterministic fallback when a key, media, or service is unavailable.
 - [ ] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
+- [ ] Pass the active user’s Habit Protocol and explicit preferences into the agent context.
 - [ ] Use strict JSON schemas / function schemas for agent output.
 - [ ] Keep Saboteur assessment, transcript evidence, and risk label private.
 - [ ] Validate every model result server-side before saving or rendering it.

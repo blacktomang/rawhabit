@@ -43,9 +43,11 @@ The MVP includes three **RawHabit Official** templates, curated and versioned by
 - 21-Day Gym Consistency
 - 14-Day Screen-Free Nights
 
-Each template includes a duration, description, and strategy rules. Its card carries an **Official** badge and the challenge dashboard show an avatar stack and participant count: “Alex, Jordan, and 28 others are building this.” Selecting it opens a **People building this habit** sheet with only opted-in participants.
+Each template includes a duration, description, strategy rules, and a fixed **Habit Protocol setup**. Its card carries an **Official** badge and the challenge dashboard show an avatar stack and participant count: “Alex, Jordan, and 28 others are building this.” Selecting it opens a **People building this habit** sheet with only opted-in participants.
 
-Users can clone a public template from a feed post. The resulting challenge stores source attribution, e.g. “Initiated by Alex’s Day 8 check-in.” Cloning does not reveal Alex’s raw media, transcript, or AI assessment.
+When a user starts or clones a template, RawHabit asks its pre-authored 2–3 setup questions—such as the hardest trigger, main barrier, or smallest valid action. Their answers create a personal Habit Protocol. Cloning stores source attribution, e.g. “Initiated by Alex’s Day 8 check-in,” but never copies Alex’s personal protocol, raw media, transcript, or AI assessment.
+
+Official templates declare a change direction. Building a good habit makes the desired behavior more obvious and easier; reducing a bad habit makes the unwanted behavior less visible and harder. The user can edit their own protocol at any time.
 
 ### 2. Daily raw check-in
 
@@ -53,7 +55,7 @@ Users record 15–30 seconds with browser `MediaRecorder`, preview or retake it,
 
 ### 3. Accountability Agent
 
-The server transcribes audio with `whisper-1`, then calls GPT-5.6 through the Responses API. The experience has two explainable stages in one awaited agent response:
+The server transcribes audio with `whisper-1`, then calls GPT-5.6 through the Responses API. The agent does not generate template onboarding questions; it receives the saved Habit Protocol and personalizes it after real check-ins and explicit feedback. The experience has two explainable stages in one awaited agent response:
 
 - **Saboteur:** identifies friction patterns, excuses, and a private support-routing label (`low`, `medium`, `high`, `critical`).
 - **Coach:** asks a concise Socratic question, gives one practical strategy-compatible action, and may propose a temporary 24-hour action card or protocol adjustment.
@@ -93,9 +95,10 @@ Excluded: authentication, database persistence, real DMs/comments/likes, real mo
 1. Start a template and view its participant community.
 2. Record or use the transcript fallback and receive a Saboteur/Coach response.
 3. Display and complete a 24-hour action card.
-4. Publish a harmless progress update and show it atop the feed.
-5. Clone a template and show its initiator attribution plus community count.
-6. Use Dev Cheat, generate the Graduate report, and publish a victory post.
+4. Start or clone an Official template, complete its 2–3 Habit Protocol setup questions, and show the personal protocol.
+5. Publish a harmless progress update and show it atop the feed.
+6. Clone a template and show its initiator attribution plus community count.
+7. Use Dev Cheat, generate the Graduate report, and publish a victory post.
 
 ## Build Week submission readiness
 

@@ -6,7 +6,7 @@ const outcomes = ["accepted", "dismissed", "unhelpful", "alternative_requested"]
 
 export const agentController = {
   completeActionCard: (request: Request, response: Response) => {
-    const card = habitRepository.completeActionCard(request.params.id);
+    const card = habitRepository.completeActionCard(request.params.id as string);
     return card ? response.json(card) : sendError(response, 404, "Active action card not found.", "NOT_FOUND");
   },
   feedback: (request: Request, response: Response) => {
