@@ -36,14 +36,14 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P0 — Recorder and private check-in
 
-- [ ] Implement recorder states: idle → permission → recording → preview → submitting → result/error.
-- [ ] Request camera/microphone through `MediaRecorder`.
+- [x] Implement recorder states: idle → permission → recording → preview → submitting → result/error.
+- [x] Request camera/microphone through `MediaRecorder`.
 - [x] Provide audio-only fallback when camera access is denied.
 - [x] Enforce 15-second minimum and 30-second maximum in normal UI.
 - [x] Add preview, retake, object-URL cleanup, and a 15 MB media limit.
 - [x] Default every check-in to private.
 - [x] Add a development-only transcript fallback for reliable demonstrations.
-- [ ] Keep the recording draft available after a recoverable failure.
+- [x] Keep the recording draft available after a recoverable failure.
 
 ## P0 — Backend agent pipeline
 
@@ -78,7 +78,7 @@ This is the implementation order and test plan. Each item is small enough to com
 - [x] Add an explicit publish control after the user reviews the result.
 - [x] Implement `POST /api/check-ins/:id/publish` to create a safe public feed item.
 - [x] Keep public cards to caption, Day X/Y, progress, coach snippet, and clone/community controls.
-- [ ] Add optional, user-confirmed generic “Encouragement welcome” signal.
+- [x] Add optional, user-confirmed generic “Encouragement welcome” signal.
 - [x] Verify the feed never renders risk, transcript, assessment evidence, or raw private media.
 
 ## P0 — Graduate loop
@@ -107,14 +107,14 @@ This is the implementation order and test plan. Each item is small enough to com
 - [x] `bun run typecheck`
 - [x] `bun --filter '@rawhabit/client' build`
 - [x] Test health, templates, session, community, feed, and clone endpoints.
-- [ ] Test camera granted, camera denied/audio fallback, retake, and transcript fallback.
-- [ ] Test private submission: no public feed update.
-- [ ] Test public publish: safe card appears without refresh.
-- [ ] Test SSE completed, failed, and disconnected/polling paths.
-- [ ] Test accept, adjust, alternative, dismiss, and unhelpful feedback paths.
-- [ ] Test the next agent run receives relevant explicit preference feedback.
-- [ ] Test Dev Cheat → report → Graduate post.
-- [ ] Restart the server and confirm the known in-memory demo state returns.
+- [x] Test camera granted, camera denied/audio fallback, retake, and transcript fallback.
+- [x] Test private submission: no public feed update.
+- [x] Test public publish: safe card appears without refresh.
+- [x] Test SSE completed, failed, and disconnected/polling paths.
+- [x] Test accept, adjust, alternative, dismiss, and unhelpful feedback paths.
+- [x] Test the next agent run receives relevant explicit preference feedback.
+- [x] Test Dev Cheat → report → Graduate post.
+- [x] Restart the server and confirm the known in-memory demo state returns.
 
 ## Build Week handoff
 

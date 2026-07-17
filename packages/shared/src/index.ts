@@ -172,6 +172,7 @@ export interface FeedItem {
   coachSnippet?: string;
   initiatedBy?: ChallengeInitiator;
   mediaUrl?: string;
+  encouragementWelcome?: boolean;
   createdAt: string;
 }
 
