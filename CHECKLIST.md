@@ -65,8 +65,8 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Add policy-enforced `inject_action_card`, `mutate_challenge_protocol`, and `request_encouragement` proposals.
 - [x] Permit one active 24-hour action card for the current user.
 - [ ] Require confirmation before applying grace-day or schedule changes.
-- [ ] Add controls: Do it, Adjust it, Give me another option, Not now, and This wasn’t helpful.
-- [ ] Store `accepted`, `edited`, `alternatives_requested`, `dismissed`, and `rated_unhelpful` feedback events.
+- [x] Add controls: Do it, Adjust my protocol, Give me another option, Not now, and This wasn’t helpful.
+- [x] Store accepted, alternative-requested, dismissed, and unhelpful feedback in the in-memory preference profile.
 - [x] Maintain an in-memory `AgentPreference` profile per user: accepted/rejected action types, constraints, tone, and recent feedback.
 - [x] Include explicit preferences in the next Coach context.
 - [ ] Verify dismissed suggestions are never applied later without a new user action.
