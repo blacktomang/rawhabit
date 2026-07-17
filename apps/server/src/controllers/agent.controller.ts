@@ -15,6 +15,8 @@ export const agentController = {
     const note = typeof request.body?.note === "string" ? request.body.note.trim().slice(0, 160) : undefined;
     if (!outcomes.includes(outcome) || !action) return sendError(response, 400, "Choose a valid action feedback outcome.", "VALIDATION_ERROR");
     const preference = habitRepository.recordActionFeedback({ action, outcome, note });
-    return response.json(preference);
+    // The next check-in reads this profile before it calls the Coach. Keep the
+    // acknowledgement explicit so clients never mistake this for a no-op.
+    return response.json({ preference, storedForNextCoachRun: true });
   },
 };
