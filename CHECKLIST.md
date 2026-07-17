@@ -1,131 +1,122 @@
-# RawHabit AI — One-Week Build Checklist
+# RawHabit AI — Build Checklist
 
-Source documents: [PRD.md](./PRD.md) and [SPEC.md](./SPEC.md).  
-Definition of done: a fresh browser session completes the full demo loop without manual data edits.
+Source of truth: [PRD.md](./PRD.md) and [SPEC.md](./SPEC.md).  
+Definition of done: a clean demo session completes the complete private-check-in → community → Graduate loop without manual state edits.
+
+## What this checklist is
+
+This is the implementation order and test plan. Each item is small enough to complete, verify, and demo. Build P0 top-to-bottom before starting P1 polish.
 
 ## P0 — Foundation
 
 - [ ] Run `bun install` from the repository root.
-- [ ] Confirm `bun dev` starts the Vite client and Express server together.
-- [ ] Add `.env` from `.env.example`; keep `OPENAI_API_KEY` server-only.
-- [ ] Verify `GET /health` returns `{ "status": "ok" }`.
-- [ ] Extend `@rawhabit/shared` with challenge, feed, Graduate, and transformation-report contracts from the spec.
-- [ ] Create the in-memory server store and three hardcoded challenge templates.
-- [ ] Add three clearly fictional seeded feed cards.
-- [ ] Implement `GET /api/templates`, `GET /api/session`, and `GET /api/feed`.
-- [ ] Verify client startup fetches templates, session state, and feed data.
+- [ ] Add `.env.example` with `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6`, `OPENAI_TRANSCRIPTION_MODEL=whisper-1`, and `ALLOW_DEV_CHEAT`.
+- [ ] Confirm `bun dev` starts client and server.
+- [ ] Confirm `GET /health` returns `{ "status": "ok" }`.
+- [ ] Add all current shared contracts from `SPEC.md` to `@rawhabit/shared`.
+- [ ] Extend the in-memory repository with templates, seeded fictional feed cards, participant communities, action cards, agent actions, and user preference records.
+- [ ] Keep all raw media/transcripts/assessments out of public repository queries.
+- [ ] Add a `README.md` with setup, fallback/demo instructions, architecture, and how Codex/GPT-5.6 were used.
 
-## P0 — Challenge setup
+## P0 — Templates, clones, and community
 
-- [ ] Build the template-picker screen.
-- [ ] Display title, duration, description, and strategy rules for each template.
-- [ ] Implement `POST /api/challenge/start`.
-- [ ] Start **30-Day Quit Smoking** and verify session state is Day 1 / active.
-- [ ] Build the active-challenge dashboard with `Day X of Y` and an accessible progress bar.
-- [ ] Display selected strategy rules on the dashboard.
-- [ ] Implement `POST /api/templates/:templateId/clone` using the same start transition.
-- [ ] Verify cloning a feed template returns the user to Day 1 of the selected challenge.
+- [ ] Seed the versioned **RawHabit Official** Quit Smoking, Gym Consistency, and Screen-Free Nights templates.
+- [ ] Render an Official badge; do not permit community editing of official strategy rules in the MVP.
+- [ ] Seed opted-in fictional template participants and avatar placeholders.
+- [ ] Implement `GET /api/templates` and `GET /api/templates/:templateId/community`.
+- [ ] Implement `POST /api/challenge/start` at Day 1.
+- [ ] Replace template-only cloning with `POST /api/feed/:feedItemId/clone`.
+- [ ] Save `ChallengeInitiator` from the source public feed item.
+- [ ] Add the current user to the template community only after visibility consent.
+- [ ] Render avatar stack, participant count, and “People building this habit” sheet.
+- [ ] Show “Initiated by …” on a cloned challenge.
+- [ ] Verify a participant sheet does not expose private check-ins, transcript, risk, or assessment evidence.
 
-## P0 — Recorder and submission
+## P0 — Recorder and private check-in
 
-- [ ] Build the recorder state machine: idle → permission → ready → recording → preview → upload/result.
-- [ ] Request browser camera and microphone permissions with `MediaRecorder`.
-- [ ] Support audio-only fallback when camera access is denied.
-- [ ] Show elapsed recording time.
-- [ ] Enforce the normal 15-second minimum and 30-second maximum.
-- [ ] Add preview playback, discard, and retake actions.
-- [ ] Revoke object URLs when recordings are discarded or replaced.
-- [ ] Add private/public visibility selection; default to private.
-- [ ] Add development-only demo transcript fallback for permission/API failures.
-- [ ] Implement multipart `POST /api/check-ins` handling.
-- [ ] Validate active challenge, content type, and 15 MB upload size on the server.
-- [ ] Keep submitted preview/state available when upload or processing fails.
+- [ ] Implement recorder states: idle → permission → recording → preview → submitting → result/error.
+- [ ] Request camera/microphone through `MediaRecorder`.
+- [ ] Provide audio-only fallback when camera access is denied.
+- [ ] Enforce 15-second minimum and 30-second maximum in normal UI.
+- [ ] Add preview, retake, object-URL cleanup, and a 15 MB media limit.
+- [ ] Default every check-in to private.
+- [ ] Add a development-only transcript fallback for reliable demonstrations.
+- [ ] Keep the recording draft available after a recoverable failure.
 
-## P0 — OpenAI pipeline and coaching
+## P0 — Backend agent pipeline
 
-- [ ] Add a server-only OpenAI service adapter.
-- [ ] Implement supported audio handling and audio-extraction fallback messaging for unsupported video environments.
-- [ ] Implement speech-to-text with `OPENAI_TRANSCRIPTION_MODEL` (default `whisper-1`).
-- [ ] Call `gpt-4o-mini` for structured `AICoachResponse` output.
-- [ ] Pass transcript, challenge, current day, and strategy rules to the coach prompt.
-- [ ] Validate parsed AI JSON against shared contract fields.
-- [ ] Implement deterministic fallback transcript/coach output for missing API key or malformed model response.
-- [ ] Render caption, private risk level, coach message, and suggested action on the result screen.
-- [ ] Ensure public feed cards never show risk level.
-- [ ] Verify a real or demo-fallback check-in produces a complete result.
+- [ ] Create a `CheckInJob` record with `queued | transcribing | coaching | complete | failed` status.
+- [ ] `POST /api/check-ins` returns `202 { jobId }` after saving the job.
+- [ ] Implement `GET /api/check-in-jobs/:jobId/events` as an SSE stream.
+- [ ] Emit `processing`, `transcript_ready`, `coach_ready`, `action_card_ready`, `confirmation_required`, `complete`, and `failed` events.
+- [ ] Provide `GET /api/check-in-jobs/:jobId` polling fallback when SSE disconnects.
+- [ ] Send audio to `whisper-1`; preserve a deterministic fallback when a key, media, or service is unavailable.
+- [ ] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
+- [ ] Use strict JSON schemas / function schemas for agent output.
+- [ ] Keep Saboteur assessment, transcript evidence, and risk label private.
+- [ ] Validate every model result server-side before saving or rendering it.
+- [ ] Add non-diagnostic high/critical support copy; never claim emergency detection.
 
-## P0 — Feed update
+## P0 — Agent actions and responsiveness
 
-- [ ] Convert public check-ins to `daily_log` feed items.
-- [ ] Confirm private check-ins do not change `GET /api/feed`.
-- [ ] Add a new public feed item at the top without a page reload.
-- [ ] Render card challenge title, caption, Day X/Y, labeled progress, and coach snippet.
-- [ ] Add **Clone template** controls to eligible feed cards.
-- [ ] Confirm the feed remains populated from seeds before the first user check-in.
+- [ ] Add policy-enforced `inject_action_card`, `mutate_challenge_protocol`, and `request_encouragement` proposals.
+- [ ] Permit at most one active 24-hour action card for the current user.
+- [ ] Require confirmation before applying grace-day or schedule changes.
+- [ ] Add controls: Do it, Adjust it, Give me another option, Not now, and This wasn’t helpful.
+- [ ] Store `accepted`, `edited`, `alternatives_requested`, `dismissed`, and `rated_unhelpful` feedback events.
+- [ ] Maintain an in-memory `AgentPreference` profile per user: accepted/rejected action types, constraints, tone, and recent feedback.
+- [ ] Include only relevant explicit preferences in the next Coach context.
+- [ ] Verify dismissed suggestions are never applied later without a new user action.
 
-## P0 — Completion and Graduate loop
+## P0 — Result and feed
 
-- [ ] Implement development guard for `POST /api/challenge/dev-complete`.
-- [ ] Add clearly labelled **Dev Cheat: Complete Challenge** control in a distinct Demo tools area.
-- [ ] Verify cheat action changes Day X to the template total and state to completed.
-- [ ] Verify session user status changes from challenger to Graduate.
-- [ ] Keep the Graduate composer inaccessible before completion.
-- [ ] Implement `POST /api/graduate/report`.
-- [ ] Generate an AI report from check-in captions/transcripts when available.
-- [ ] Implement a deterministic report fallback for zero logs or unavailable OpenAI.
-- [ ] Render challenge, themes, strengths, and carry-forward action in the Graduate view.
-- [ ] Implement `POST /api/graduate/post` with 1–500 character validation.
-- [ ] Publish a Graduate post and confirm it appears atop the feed as `graduate_post`.
+- [ ] Render SSE processing states: “Listening…”, “Finding the friction…”, and “Building your next step…”.
+- [ ] Render Coach plan, Socratic question, and private action card.
+- [ ] Add an explicit publish control after the user reviews the result.
+- [ ] Implement `POST /api/check-ins/:id/publish` to create a safe public feed item.
+- [ ] Confirm public cards include only caption, Day X/Y, progress, coach snippet, and clone/community controls.
+- [ ] Add optional, user-confirmed generic “Encouragement welcome” signal.
+- [ ] Verify the feed never renders risk, transcript, assessment evidence, or raw private media.
 
-## P0 — Error handling and safety
+## P0 — Graduate loop
 
-- [ ] Return typed `ApiError` responses for validation, invalid state, not found, and processing failures.
-- [ ] Show clear inline client messages for unsupported media, upload failure, and invalid victory captions.
-- [ ] Preserve user recording state after recoverable processing failures.
-- [ ] Include supportive, non-diagnostic language in coaching prompts and fallbacks.
-- [ ] For high/critical output, show a private safety reminder to contact trusted or local emergency/crisis support if immediate danger is possible.
-- [ ] Never claim detection of an emergency, a health condition, or a diagnosis.
-- [ ] Verify OpenAI key never appears in client source, build output, or API responses.
+- [ ] Guard `POST /api/challenge/dev-complete` to non-production or `ALLOW_DEV_CHEAT=true`.
+- [ ] Visually separate the Dev Cheat from normal controls.
+- [ ] Complete the challenge: set final day, completed status, and Graduate profile status.
+- [ ] Implement `POST /api/graduate/report` with GPT-5.6 summary plus deterministic fallback.
+- [ ] Keep report below 180 words and non-clinical.
+- [ ] Unlock the Graduate composer only after completion.
+- [ ] Implement validated `POST /api/graduate/post` (1–500 characters).
+- [ ] Confirm victory post appears at the top of the feed.
 
-## P1 — Polish and demo resilience
+## P1 — Polish and resilience
 
-- [ ] Add loading states and disabled controls for every mutation.
-- [ ] Make primary flows work on a narrow mobile viewport and desktop.
-- [ ] Ensure progress, risk, and status do not rely on color alone.
-- [ ] Add empty-state copy for no active challenge and no feed items.
-- [ ] Include a visible fallback/demo mode indicator only where helpful to presenters, not in public feed cards.
-- [ ] Seed one sample transformation report for visual development.
-- [ ] Verify fresh server/browser sessions return to a known demo state.
+- [ ] Add loading/disabled/error states for every mutation.
+- [ ] Test narrow mobile layout, desktop layout, keyboard controls, and non-color status labels.
+- [ ] Use clearly fictional seed names/content only.
+- [ ] Add empty states for no active challenge, no participants, and no feed items.
+- [ ] Add SSE reconnect with polling fallback.
+- [ ] Expire stale action cards on read and show the expiry clearly.
+- [ ] Add request IDs and agent-action audit logs to server output.
 
 ## Verification pass
 
-- [ ] Run package type checks after dependencies are installed: `bun run typecheck`.
-- [ ] Build the client: `bun --filter '@rawhabit/client' build`.
-- [ ] Run server manually and exercise health/session/templates/feed endpoints.
-- [ ] Test real browser permission grant, denial, and retake scenarios.
-- [ ] Test private and public submission behavior.
-- [ ] Test missing `OPENAI_API_KEY` fallback behavior.
-- [ ] Test malformed/empty upload and no-active-challenge API errors.
-- [ ] Test dev completion → report → Graduate post sequence.
-- [ ] Restart server and confirm seeded demo remains coherent.
+- [ ] `bun run typecheck`
+- [ ] `bun --filter '@rawhabit/client' build`
+- [ ] Test health, templates, session, community, feed, and clone endpoints.
+- [ ] Test camera granted, camera denied/audio fallback, retake, and transcript fallback.
+- [ ] Test private submission: no public feed update.
+- [ ] Test public publish: safe card appears without refresh.
+- [ ] Test SSE completed, failed, and disconnected/polling paths.
+- [ ] Test accept, adjust, alternative, dismiss, and unhelpful feedback paths.
+- [ ] Test the next agent run receives relevant explicit preference feedback.
+- [ ] Test Dev Cheat → report → Graduate post.
+- [ ] Restart the server and confirm the known in-memory demo state returns.
 
-## Final demo rehearsal
+## Build Week handoff
 
-- [ ] Open a clean browser profile/session.
-- [ ] Select **30-Day Quit Smoking**.
-- [ ] Point out the backup rules and Day 1 progress.
-- [ ] Record or use the prepared demo fallback check-in.
-- [ ] Show caption and tactical AI response.
-- [ ] Publish publicly and show the new Day 1 feed card.
-- [ ] Clone a template briefly to show the viral loop, then reset to the primary demo state.
-- [ ] Trigger **Dev Cheat: Complete Challenge**.
-- [ ] Show Graduate status and transformation report.
-- [ ] Publish a victory post.
-- [ ] End on the feed containing both raw daily progress and Graduate celebration.
-
-## Submission handoff
-
-- [ ] Capture a 60–90 second demo video following the final rehearsal.
-- [ ] Prepare live app/repository link.
-- [ ] Use the PRD’s Devpost tagline, description, and Built With list.
-- [ ] Confirm all required Devpost submission fields and assets are complete before submission.
+- [ ] Keep the repository public with relevant license, or share private access with `testing@devpost.com` and `build-week-event@openai.com`.
+- [ ] Document sample/demo data and all setup steps in the README.
+- [ ] Record a public YouTube video under three minutes showing the project working.
+- [ ] Include voiceover explaining where Codex accelerated development and how GPT-5.6 powers the agent flow.
+- [ ] Add repository URL, Apps for Your Life category, and the `/feedback` Codex session ID to Devpost.

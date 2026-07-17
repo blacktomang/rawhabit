@@ -37,13 +37,13 @@ Choose a template → join its community → record a private raw check-in
 
 ### 1. Challenge templates and community
 
-The MVP includes three templates:
+The MVP includes three **RawHabit Official** templates, curated and versioned by the product rather than authored by community members:
 
 - 30-Day Quit Smoking
 - 21-Day Gym Consistency
 - 14-Day Screen-Free Nights
 
-Each template includes a duration, description, and strategy rules. A template card and challenge dashboard show an avatar stack and participant count: “Alex, Jordan, and 28 others are building this.” Selecting it opens a **People building this habit** sheet with only opted-in participants.
+Each template includes a duration, description, and strategy rules. Its card carries an **Official** badge and the challenge dashboard show an avatar stack and participant count: “Alex, Jordan, and 28 others are building this.” Selecting it opens a **People building this habit** sheet with only opted-in participants.
 
 Users can clone a public template from a feed post. The resulting challenge stores source attribution, e.g. “Initiated by Alex’s Day 8 check-in.” Cloning does not reveal Alex’s raw media, transcript, or AI assessment.
 

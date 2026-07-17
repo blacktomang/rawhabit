@@ -42,6 +42,8 @@ export type AgentActionStatus = "proposed" | "awaiting_confirmation" | "executed
 
 export interface ChallengeTemplate {
   id: string;
+  source: "official";
+  version: number;
   title: string;
   totalDays: number;
   description: string;
@@ -175,7 +177,7 @@ The model has these narrow function tools:
 | Method | Endpoint | Response / behavior |
 | --- | --- | --- |
 | `GET` | `/health` | `{ status: "ok" }` |
-| `GET` | `/api/templates` | `ChallengeTemplate[]` |
+| `GET` | `/api/templates` | Official `ChallengeTemplate[]` |
 | `GET` | `/api/templates/:templateId/community` | `TemplateCommunity` plus paginated opted-in participants |
 | `GET` | `/api/session` | `SessionState` |
 | `GET` | `/api/feed` | Public seeded/user `FeedItem[]`, newest first |
@@ -223,7 +225,7 @@ App
       └─ VictoryComposer
 ```
 
-Public cards must never render `assessment`, evidence, risk level, or raw transcript. The community sheet lists only opted-in profile basics and can display a generic current-day value only if that option is later added explicitly.
+Public cards must never render `assessment`, evidence, risk level, or raw transcript. The community sheet lists only opted-in profile basics and can display a generic current-day value only if that option is later added explicitly. Template cards display the `Official` badge for their curated, versioned protocol.
 
 ## 7. Environment and verification
 
