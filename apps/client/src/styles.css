@@ -26,3 +26,4 @@ h1, h2, h3, p { margin-top: 0; } h1, h2 { font-family: "Iowan Old Style", "Palat
 .private-note { color: #c4c5bb; font-size: .74rem; margin: .8rem 0; }.publish-progress { background: #512e24; color: #fff5e8; font-size: .76rem; font-weight: 800; margin-top: 1rem; padding: .65rem .8rem; }
 .processing-stage { color: #d7f35e; font-size: .82rem; font-weight: 800; margin: .8rem 0; }
 .audio-only-state { background: #3a3c34; border: 1px solid #56584e; border-radius: .65rem; color: #d7f35e; font-size: .78rem; font-weight: 800; margin: 1rem 0; padding: 1rem; }
+.socratic-prompt { border-left: 2px solid #a95b43; font-style: italic; margin: 1rem 0; padding-left: .7rem; }

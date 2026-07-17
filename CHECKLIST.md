@@ -56,9 +56,9 @@ This is the implementation order and test plan. Each item is small enough to com
 - [x] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
 - [x] Pass the active user’s Habit Protocol and explicit preferences into the agent context.
 - [x] Use strict JSON schema output for coach responses.
-- [ ] Keep Saboteur assessment, transcript evidence, and risk label private.
-- [ ] Validate every model result server-side before saving or rendering it.
-- [ ] Add non-diagnostic high/critical support copy; never claim emergency detection.
+- [x] Keep Saboteur assessment, transcript evidence, and risk label private.
+- [x] Validate every model result server-side before saving or rendering it.
+- [x] Add non-diagnostic high/critical support copy; never claim emergency detection.
 
 ## P0 — Agent actions and responsiveness
 
@@ -73,13 +73,13 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P0 — Result and feed
 
-- [ ] Render SSE processing states: “Listening…”, “Finding the friction…”, and “Building your next step…”.
-- [ ] Render Coach plan, Socratic question, and private action card.
+- [x] Render SSE processing states: “Listening…”, “Finding the friction…”, and “Building your next step…”.
+- [x] Render Coach plan, Socratic question, and private action card.
 - [x] Add an explicit publish control after the user reviews the result.
 - [x] Implement `POST /api/check-ins/:id/publish` to create a safe public feed item.
 - [x] Keep public cards to caption, Day X/Y, progress, coach snippet, and clone/community controls.
 - [ ] Add optional, user-confirmed generic “Encouragement welcome” signal.
-- [ ] Verify the feed never renders risk, transcript, assessment evidence, or raw private media.
+- [x] Verify the feed never renders risk, transcript, assessment evidence, or raw private media.
 
 ## P0 — Graduate loop
 
