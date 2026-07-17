@@ -21,9 +21,13 @@ export interface AICoachResponse {
 export type ChallengeStatus = "active" | "completed";
 export type Visibility = "private" | "public";
 export type FeedItemKind = "daily_log" | "graduate_post";
+export type AgentActionKind = "inject_action_card" | "mutate_challenge_protocol" | "request_encouragement";
+export type AgentActionStatus = "proposed" | "awaiting_confirmation" | "executed" | "rejected" | "expired";
 
 export interface ChallengeTemplate {
   id: string;
+  source: "official";
+  version: number;
   title: string;
   totalDays: number;
   description: string;
@@ -32,9 +36,75 @@ export interface ChallengeTemplate {
 
 export interface ActiveChallenge {
   templateId: string;
+  originTemplateId: string;
+  initiatedBy?: ChallengeInitiator;
   currentDay: number;
   status: ChallengeStatus;
   startedAt: string;
+}
+
+export interface ChallengeInitiator {
+  sourceFeedItemId: string;
+  displayName: string;
+  challengeTitle: string;
+  clonedAt: string;
+}
+
+export interface TemplateParticipant {
+  userId: string;
+  templateId: string;
+  displayName: string;
+  avatarUrl?: string;
+  joinedAt: string;
+  visibility: "listed" | "anonymous";
+  sourceFeedItemId?: string;
+}
+
+export interface TemplateCommunity {
+  templateId: string;
+  participantCount: number;
+  previewParticipants: TemplateParticipant[];
+}
+
+export interface SaboteurAssessment {
+  riskLevel: RiskLevel;
+  frictionPatterns: string[];
+  evidence: string[];
+  recommendedIntervention: "coach" | "action_card" | "protocol_change" | "support_prompt";
+}
+
+export interface CoachPlan {
+  caption: string;
+  socraticPrompt: string;
+  suggestedAction: string;
+  supportMessage?: string;
+}
+
+export interface ActionCard {
+  id: string;
+  checkInId: string;
+  title: string;
+  instruction: string;
+  expiresAt: string;
+  completedAt?: string;
+  status: "active" | "completed" | "expired";
+}
+
+export interface AgentAction {
+  id: string;
+  checkInId: string;
+  kind: AgentActionKind;
+  status: AgentActionStatus;
+  proposedPayload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface AgentPreference {
+  acceptedActionTypes: string[];
+  rejectedActionTypes: string[];
+  constraints: string[];
+  preferredTone?: "gentle" | "direct";
+  recentFeedback: string[];
 }
 
 export interface CheckIn {
@@ -44,7 +114,10 @@ export interface CheckIn {
   transcript: string;
   caption: string;
   visibility: Visibility;
+  mediaUrl?: string;
   coach: AICoachResponse;
+  assessment?: SaboteurAssessment;
+  coachPlan?: CoachPlan;
   aiRun: {
     transcription: "live" | "fallback";
     coaching: "live" | "fallback";
@@ -62,6 +135,8 @@ export interface FeedItem {
   totalDays?: number;
   caption: string;
   coachSnippet?: string;
+  initiatedBy?: ChallengeInitiator;
+  mediaUrl?: string;
   createdAt: string;
 }
 
@@ -75,7 +150,8 @@ export interface TransformationReport {
 }
 
 export interface SessionState {
-  user: { displayName: string; status: "challenger" | "graduate" };
+  user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous" };
   activeChallenge: ActiveChallenge | null;
+  activeActionCard: ActionCard | null;
   report: TransformationReport | null;
 }

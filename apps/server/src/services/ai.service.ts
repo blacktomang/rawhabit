@@ -1,5 +1,5 @@
 import OpenAI, { toFile } from "openai";
-import type { AICoachResponse, ChallengeTemplate } from "@rawhabit/shared";
+import type { AICoachResponse, AgentPreference, ChallengeTemplate } from "@rawhabit/shared";
 import { env } from "../config/env";
 
 export type AiMode = "live" | "fallback";
@@ -16,18 +16,16 @@ export class AiService {
     return { transcript: result.text.trim(), mode: "live" as const };
   }
 
-  async coach(transcript: string, template: ChallengeTemplate, day: number) {
+  async coach(transcript: string, template: ChallengeTemplate, day: number, preferences: AgentPreference) {
     if (!this.client) return { result: this.fallbackCoach(transcript, template), mode: "fallback" as const };
     try {
-      const completion = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: "You are a concise, empathetic habit coach. Return JSON only with riskLevel (low, medium, high, or critical), caption under 140 characters, coachMessage, and suggestedAction. Give one practical action compatible with the strategy rules. Do not diagnose or prescribe treatment. For high/critical risk, compassionately encourage trusted or local emergency/crisis support if immediate danger is possible." },
-          { role: "user", content: JSON.stringify({ transcript, challenge: template.title, day, totalDays: template.totalDays, strategyRules: template.strategyRules }) },
-        ],
+      const response = await this.client.responses.create({
+        model: env.coachingModel,
+        instructions: "You are RawHabit's concise, empathetic Accountability Agent. First privately assess friction and risk. Then give exactly one practical, strategy-compatible action. Never diagnose, prescribe treatment, or claim emergency detection. For high or critical language, compassionately encourage a trusted person or local emergency/crisis support if immediate danger is possible.",
+        input: JSON.stringify({ transcript, challenge: template.title, day, totalDays: template.totalDays, strategyRules: template.strategyRules, explicitUserPreferences: preferences }),
+        text: { format: { type: "json_schema", name: "rawhabit_coach_response", strict: true, schema: { type: "object", additionalProperties: false, properties: { riskLevel: { type: "string", enum: ["low", "medium", "high", "critical"] }, caption: { type: "string" }, coachMessage: { type: "string" }, suggestedAction: { type: "string" } }, required: ["riskLevel", "caption", "coachMessage", "suggestedAction"] } },
       });
-      const result = JSON.parse(completion.choices[0]?.message.content ?? "{}") as Partial<AICoachResponse>;
+      const result = JSON.parse(response.output_text || "{}") as Partial<AICoachResponse>;
       if (!["low", "medium", "high", "critical"].includes(result.riskLevel ?? "") || !result.caption || !result.coachMessage) throw new Error("Invalid coach response");
       return { result: { riskLevel: result.riskLevel as AICoachResponse["riskLevel"], caption: result.caption.slice(0, 140), coachMessage: result.coachMessage, suggestedAction: result.suggestedAction || template.strategyRules[0] }, mode: "live" as const };
     } catch (cause) {

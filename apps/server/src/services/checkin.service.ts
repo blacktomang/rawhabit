@@ -4,7 +4,7 @@ import { habitRepository } from "../repositories/habit.repository";
 import { aiService } from "./ai.service";
 
 export class CheckInService {
-  async create(input: { request: Parameters<typeof readMediaBody>[0]; visibility: Visibility; demoTranscript: string }) {
+  async create(input: { request: Parameters<typeof readMediaBody>[0]; visibility: Visibility; demoTranscript: string; mediaUrl?: string }) {
     const template = habitRepository.getActiveTemplate();
     const active = habitRepository.getSession().activeChallenge;
     if (!template || !active || active.status !== "active") return { error: "NO_ACTIVE_CHALLENGE" as const };
@@ -26,12 +26,12 @@ export class CheckInService {
       transcriptionMode = "fallback";
     }
 
-    const coaching = await aiService.coach(transcript, template, active.currentDay);
-    const checkIn: CheckIn = { id: crypto.randomUUID(), challengeTemplateId: template.id, day: active.currentDay, transcript, caption: coaching.result.caption, visibility: input.visibility, coach: coaching.result, aiRun: { transcription: transcriptionMode, coaching: coaching.mode }, createdAt: new Date().toISOString() };
+    const coaching = await aiService.coach(transcript, template, active.currentDay, habitRepository.getPreference());
+    const checkIn: CheckIn = { id: crypto.randomUUID(), challengeTemplateId: template.id, day: active.currentDay, transcript, caption: coaching.result.caption, visibility: input.visibility, mediaUrl: input.mediaUrl, coach: coaching.result, aiRun: { transcription: transcriptionMode, coaching: coaching.mode }, createdAt: new Date().toISOString() };
     habitRepository.addCheckIn(checkIn);
     let feedItem: FeedItem | undefined;
     if (input.visibility === "public") {
-      feedItem = { id: crypto.randomUUID(), kind: "daily_log", authorName: habitRepository.getSession().user.displayName, templateId: template.id, challengeTitle: template.title, currentDay: active.currentDay, totalDays: template.totalDays, caption: coaching.result.caption, coachSnippet: coaching.result.coachMessage, createdAt: checkIn.createdAt };
+      feedItem = { id: crypto.randomUUID(), kind: "daily_log", authorName: habitRepository.getSession().user.displayName, templateId: template.id, challengeTitle: template.title, currentDay: active.currentDay, totalDays: template.totalDays, caption: coaching.result.caption, coachSnippet: coaching.result.coachMessage, mediaUrl: input.mediaUrl, createdAt: checkIn.createdAt };
       habitRepository.addFeedItem(feedItem);
     }
     return { checkIn, feedItem };
