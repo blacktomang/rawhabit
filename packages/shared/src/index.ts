@@ -30,6 +30,7 @@ export interface CheckInJob {
   id: string;
   status: CheckInJobStatus;
   checkInId?: string;
+  result?: { checkIn: CheckIn; actionCard: ActionCard };
   error?: string;
   createdAt: string;
   updatedAt: string;

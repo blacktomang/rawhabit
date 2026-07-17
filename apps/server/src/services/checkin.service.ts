@@ -5,6 +5,11 @@ import { aiService } from "./ai.service";
 
 export class CheckInService {
   async create(input: { request: Parameters<typeof readMediaBody>[0]; visibility: Visibility; demoTranscript: string; mediaUrl?: string }) {
+    const media = input.demoTranscript ? Buffer.alloc(0) : await readMediaBody(input.request);
+    return this.process({ media, contentType: input.request.header("content-type") ?? "audio/webm", visibility: input.visibility, demoTranscript: input.demoTranscript, mediaUrl: input.mediaUrl });
+  }
+
+  async process(input: { media: Buffer; contentType: string; visibility: Visibility; demoTranscript: string; mediaUrl?: string; onProgress?: (event: "transcript_ready" | "coach_ready" | "action_card_ready", data?: Record<string, unknown>) => void }) {
     const template = habitRepository.getActiveTemplate();
     const active = habitRepository.getSession().activeChallenge;
     if (!template || !active || active.status !== "active") return { error: "NO_ACTIVE_CHALLENGE" as const };
@@ -12,9 +17,8 @@ export class CheckInService {
     let transcript = input.demoTranscript;
     let transcriptionMode: "live" | "fallback" = transcript ? "fallback" : "live";
     try {
-      const media = transcript ? Buffer.alloc(0) : await readMediaBody(input.request);
-      if (!transcript && media.length) {
-        const transcription = await aiService.transcribe(media, input.request.header("content-type") ?? "audio/webm");
+      if (!transcript && input.media.length) {
+        const transcription = await aiService.transcribe(input.media, input.contentType);
         transcript = transcription.transcript;
         transcriptionMode = transcription.mode;
       }
@@ -26,11 +30,14 @@ export class CheckInService {
       transcriptionMode = "fallback";
     }
 
+    input.onProgress?.("transcript_ready", { transcriptMode: transcriptionMode });
     const coaching = await aiService.coach(transcript, template, active.currentDay, habitRepository.getPreference(), habitRepository.getSession().habitProtocol);
+    input.onProgress?.("coach_ready", { coachingMode: coaching.mode });
     const checkIn: CheckIn = { id: crypto.randomUUID(), challengeTemplateId: template.id, day: active.currentDay, transcript, caption: coaching.result.caption, visibility: input.visibility, mediaUrl: input.mediaUrl, coach: coaching.result, aiRun: { transcription: transcriptionMode, coaching: coaching.mode }, createdAt: new Date().toISOString() };
     habitRepository.addCheckIn(checkIn);
     const actionCard: ActionCard = { id: crypto.randomUUID(), checkInId: checkIn.id, title: "Your next small step", instruction: coaching.result.suggestedAction ?? template.strategyRules[0], expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: "active" };
     habitRepository.setActionCard(actionCard);
+    input.onProgress?.("action_card_ready", { actionCardId: actionCard.id });
     let feedItem: FeedItem | undefined;
     if (input.visibility === "public") {
       feedItem = { id: crypto.randomUUID(), kind: "daily_log", authorName: habitRepository.getSession().user.displayName, templateId: template.id, challengeTitle: template.title, currentDay: active.currentDay, totalDays: template.totalDays, caption: coaching.result.caption, coachSnippet: coaching.result.coachMessage, mediaUrl: input.mediaUrl, createdAt: checkIn.createdAt };

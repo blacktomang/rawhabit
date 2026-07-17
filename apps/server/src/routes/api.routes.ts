@@ -17,6 +17,8 @@ apiRouter.post("/challenge/protocol", challengeController.saveProtocol);
 apiRouter.post("/templates/:templateId/clone", challengeController.clone);
 apiRouter.post("/feed/:feedItemId/clone", challengeController.cloneFromFeed);
 apiRouter.post("/check-ins", checkInController.create);
+apiRouter.get("/check-in-jobs/:id", checkInController.getJob);
+apiRouter.get("/check-in-jobs/:id/events", checkInController.events);
 apiRouter.post("/check-ins/:id/publish", checkInController.publish);
 apiRouter.post("/check-ins/:id/feedback", agentController.feedback);
 apiRouter.post("/action-cards/:id/complete", agentController.completeActionCard);

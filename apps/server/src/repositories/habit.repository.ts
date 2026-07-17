@@ -84,7 +84,7 @@ export class HabitRepository {
     return job;
   }
   getCheckInJob(id: string) { return this.checkInJobs.get(id); }
-  updateCheckInJob(id: string, status: CheckInJobStatus, values: Partial<Pick<CheckInJob, "checkInId" | "error">> = {}) {
+  updateCheckInJob(id: string, status: CheckInJobStatus, values: Partial<Pick<CheckInJob, "checkInId" | "error" | "result">> = {}) {
     const job = this.checkInJobs.get(id);
     if (!job) return null;
     const next = { ...job, ...values, status, updatedAt: now() };
