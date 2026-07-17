@@ -38,11 +38,11 @@ This is the implementation order and test plan. Each item is small enough to com
 
 - [ ] Implement recorder states: idle → permission → recording → preview → submitting → result/error.
 - [ ] Request camera/microphone through `MediaRecorder`.
-- [ ] Provide audio-only fallback when camera access is denied.
-- [ ] Enforce 15-second minimum and 30-second maximum in normal UI.
-- [ ] Add preview, retake, object-URL cleanup, and a 15 MB media limit.
+- [x] Provide audio-only fallback when camera access is denied.
+- [x] Enforce 15-second minimum and 30-second maximum in normal UI.
+- [x] Add preview, retake, object-URL cleanup, and a 15 MB media limit.
 - [x] Default every check-in to private.
-- [ ] Add a development-only transcript fallback for reliable demonstrations.
+- [x] Add a development-only transcript fallback for reliable demonstrations.
 - [ ] Keep the recording draft available after a recoverable failure.
 
 ## P0 — Backend agent pipeline
