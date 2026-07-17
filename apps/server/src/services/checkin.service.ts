@@ -38,6 +38,17 @@ export class CheckInService {
     }
     return { checkIn, feedItem, actionCard };
   }
+
+  publish(checkInId: string) {
+    const checkIn = habitRepository.findCheckIn(checkInId);
+    const template = checkIn && habitRepository.findTemplate(checkIn.challengeTemplateId);
+    if (!checkIn || !template) return null;
+    const existing = habitRepository.getFeed().find((item) => item.id === `checkin-${checkIn.id}`);
+    if (existing) return existing;
+    const item: FeedItem = { id: `checkin-${checkIn.id}`, kind: "daily_log", authorName: habitRepository.getSession().user.displayName, templateId: template.id, challengeTitle: template.title, currentDay: checkIn.day, totalDays: template.totalDays, caption: checkIn.caption, coachSnippet: checkIn.coach.coachMessage, initiatedBy: habitRepository.getSession().activeChallenge?.initiatedBy, createdAt: new Date().toISOString() };
+    habitRepository.addFeedItem(item);
+    return item;
+  }
 }
 
 export const checkInService = new CheckInService();

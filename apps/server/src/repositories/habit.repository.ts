@@ -76,6 +76,7 @@ export class HabitRepository {
   saveHabitProtocol(protocol: HabitProtocol) { this.session = { ...this.session, habitProtocol: protocol }; return protocol; }
 
   addCheckIn(checkIn: CheckIn) { this.checkIns = [checkIn, ...this.checkIns]; }
+  findCheckIn(id: string) { return this.checkIns.find((checkIn) => checkIn.id === id); }
   addFeedItem(item: FeedItem) { this.feed = [item, ...this.feed]; }
   setActionCard(card: ActionCard | null) { this.session = { ...this.session, activeActionCard: card }; return card; }
   completeActionCard(id: string) {

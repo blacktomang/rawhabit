@@ -4,7 +4,7 @@ import { checkInService } from "../services/checkin.service";
 
 export const checkInController = {
   create: async (request: Request, response: Response) => {
-    const visibility = request.query.visibility === "public" ? "public" : "private";
+    const visibility = "private";
     const demoTranscript = typeof request.query.demoTranscript === "string" ? request.query.demoTranscript.trim() : "";
     const mediaUrl = typeof request.query.mediaUrl === "string" && request.query.mediaUrl.startsWith("/uploads/") ? request.query.mediaUrl : undefined;
     const result = await checkInService.create({ request, visibility, demoTranscript, mediaUrl });
@@ -13,5 +13,9 @@ export const checkInController = {
       return sendError(response, 413, "Recordings must be 15 MB or smaller.", "VALIDATION_ERROR");
     }
     return response.json(result);
+  },
+  publish: (request: Request, response: Response) => {
+    const item = checkInService.publish(request.params.id as string);
+    return item ? response.json(item) : sendError(response, 404, "Check-in not found.", "NOT_FOUND");
   },
 };

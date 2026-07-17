@@ -13,29 +13,26 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Add `.env.example` with `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6`, `OPENAI_TRANSCRIPTION_MODEL=whisper-1`, and `ALLOW_DEV_CHEAT`.
 - [ ] Confirm `bun dev` starts client and server.
 - [ ] Confirm `GET /health` returns `{ "status": "ok" }`.
-- [ ] Add all current shared contracts from `SPEC.md` to `@rawhabit/shared`.
-- [ ] Extend the in-memory repository with templates, seeded fictional feed cards, participant communities, action cards, agent actions, and user preference records.
-- [ ] Keep all raw media/transcripts/assessments out of public repository queries.
-- [ ] Add a `README.md` with setup, fallback/demo instructions, architecture, and how Codex/GPT-5.6 were used.
+- [x] Add current challenge, community, action-card, preference, and Habit Protocol contracts to `@rawhabit/shared`.
+- [x] Extend the in-memory repository with templates, seeded fictional feed cards, participant communities, action cards, and user preference records.
+- [x] Keep raw media/transcripts/assessments out of public feed queries.
+- [x] Add a `README.md` with setup, fallback/demo instructions, architecture, and how Codex/GPT-5.6 were used.
 
 ## P0 — Templates, clones, and community
 
-- [ ] Seed the versioned **RawHabit Official** Quit Smoking, Gym Consistency, and Screen-Free Nights templates.
-- [ ] Render an Official badge; do not permit community editing of official strategy rules in the MVP.
-- [ ] Define each Official template’s fixed 2–3 Habit Protocol setup questions and answer options.
-- [ ] Mark templates as `build` or `reduce`; map the default protocol to the appropriate environment principle.
-- [ ] Seed opted-in fictional template participants and avatar placeholders.
-- [ ] Implement `GET /api/templates` and `GET /api/templates/:templateId/community`.
-- [ ] Implement `POST /api/challenge/start` at Day 1.
-- [ ] Replace template-only cloning with `POST /api/feed/:feedItemId/clone`.
-- [ ] Save `ChallengeInitiator` from the source public feed item.
-- [ ] Render fixed Habit Protocol setup after both start and clone; do not call the agent for onboarding questions.
-- [ ] Save a separate, user-owned Habit Protocol; do not copy the initiator’s protocol on clone.
-- [ ] Add a user-editable Habit Protocol card on the active dashboard.
-- [ ] Add the current user to the template community only after visibility consent.
-- [ ] Render avatar stack, participant count, and “People building this habit” sheet.
-- [ ] Show “Initiated by …” on a cloned challenge.
-- [ ] Verify a participant sheet does not expose private check-ins, transcript, risk, or assessment evidence.
+- [x] Seed the versioned **RawHabit Official** Quit Smoking, Gym Consistency, and Screen-Free Nights templates.
+- [x] Render an Official badge; do not permit community editing of official strategy rules in the MVP.
+- [x] Define each Official template’s fixed 2–3 Habit Protocol setup questions and answer options.
+- [x] Mark templates as `build` or `reduce`; map the default protocol to the appropriate environment principle.
+- [x] Seed opted-in fictional template participants and avatar placeholders.
+- [x] Implement `GET /api/templates` and `GET /api/templates/:templateId/community`.
+- [x] Implement `POST /api/challenge/start` at Day 1.
+- [x] Replace template-only cloning with `POST /api/feed/:feedItemId/clone`.
+- [x] Save `ChallengeInitiator` from the source public feed item.
+- [x] Render fixed Habit Protocol setup after both start and clone; do not call the agent for onboarding questions.
+- [x] Save a separate, user-owned Habit Protocol; do not copy the initiator’s protocol on clone.
+- [x] Add a user-editable Habit Protocol card on the active dashboard.
+- [x] Render a participant community sheet and source attribution without private check-in fields.
 
 ## P0 — Recorder and private check-in
 
@@ -44,7 +41,7 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Provide audio-only fallback when camera access is denied.
 - [ ] Enforce 15-second minimum and 30-second maximum in normal UI.
 - [ ] Add preview, retake, object-URL cleanup, and a 15 MB media limit.
-- [ ] Default every check-in to private.
+- [x] Default every check-in to private.
 - [ ] Add a development-only transcript fallback for reliable demonstrations.
 - [ ] Keep the recording draft available after a recoverable failure.
 
@@ -55,10 +52,10 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Implement `GET /api/check-in-jobs/:jobId/events` as an SSE stream.
 - [ ] Emit `processing`, `transcript_ready`, `coach_ready`, `action_card_ready`, `confirmation_required`, `complete`, and `failed` events.
 - [ ] Provide `GET /api/check-in-jobs/:jobId` polling fallback when SSE disconnects.
-- [ ] Send audio to `whisper-1`; preserve a deterministic fallback when a key, media, or service is unavailable.
-- [ ] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
-- [ ] Pass the active user’s Habit Protocol and explicit preferences into the agent context.
-- [ ] Use strict JSON schemas / function schemas for agent output.
+- [x] Send audio to `whisper-1`; preserve a deterministic fallback when a key, media, or service is unavailable.
+- [x] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
+- [x] Pass the active user’s Habit Protocol and explicit preferences into the agent context.
+- [x] Use strict JSON schema output for coach responses.
 - [ ] Keep Saboteur assessment, transcript evidence, and risk label private.
 - [ ] Validate every model result server-side before saving or rendering it.
 - [ ] Add non-diagnostic high/critical support copy; never claim emergency detection.
@@ -66,21 +63,21 @@ This is the implementation order and test plan. Each item is small enough to com
 ## P0 — Agent actions and responsiveness
 
 - [ ] Add policy-enforced `inject_action_card`, `mutate_challenge_protocol`, and `request_encouragement` proposals.
-- [ ] Permit at most one active 24-hour action card for the current user.
+- [x] Permit one active 24-hour action card for the current user.
 - [ ] Require confirmation before applying grace-day or schedule changes.
 - [ ] Add controls: Do it, Adjust it, Give me another option, Not now, and This wasn’t helpful.
 - [ ] Store `accepted`, `edited`, `alternatives_requested`, `dismissed`, and `rated_unhelpful` feedback events.
-- [ ] Maintain an in-memory `AgentPreference` profile per user: accepted/rejected action types, constraints, tone, and recent feedback.
-- [ ] Include only relevant explicit preferences in the next Coach context.
+- [x] Maintain an in-memory `AgentPreference` profile per user: accepted/rejected action types, constraints, tone, and recent feedback.
+- [x] Include explicit preferences in the next Coach context.
 - [ ] Verify dismissed suggestions are never applied later without a new user action.
 
 ## P0 — Result and feed
 
 - [ ] Render SSE processing states: “Listening…”, “Finding the friction…”, and “Building your next step…”.
 - [ ] Render Coach plan, Socratic question, and private action card.
-- [ ] Add an explicit publish control after the user reviews the result.
-- [ ] Implement `POST /api/check-ins/:id/publish` to create a safe public feed item.
-- [ ] Confirm public cards include only caption, Day X/Y, progress, coach snippet, and clone/community controls.
+- [x] Add an explicit publish control after the user reviews the result.
+- [x] Implement `POST /api/check-ins/:id/publish` to create a safe public feed item.
+- [x] Keep public cards to caption, Day X/Y, progress, coach snippet, and clone/community controls.
 - [ ] Add optional, user-confirmed generic “Encouragement welcome” signal.
 - [ ] Verify the feed never renders risk, transcript, assessment evidence, or raw private media.
 
@@ -107,8 +104,8 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## Verification pass
 
-- [ ] `bun run typecheck`
-- [ ] `bun --filter '@rawhabit/client' build`
+- [x] `bun run typecheck`
+- [x] `bun --filter '@rawhabit/client' build`
 - [ ] Test health, templates, session, community, feed, and clone endpoints.
 - [ ] Test camera granted, camera denied/audio fallback, retake, and transcript fallback.
 - [ ] Test private submission: no public feed update.

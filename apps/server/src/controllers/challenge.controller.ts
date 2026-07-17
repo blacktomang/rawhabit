@@ -7,11 +7,13 @@ export const challengeController = {
   getSession: (_request: Request, response: Response) => response.json(challengeService.getSession()),
   getFeed: (_request: Request, response: Response) => response.json(challengeService.getFeed()),
   getCommunity: (request: Request, response: Response) => {
-    const community = challengeService.getCommunity(request.params.templateId);
+    const templateId = typeof request.params.templateId === "string" ? request.params.templateId : "";
+    const community = challengeService.getCommunity(templateId);
     return community ? response.json(community) : sendError(response, 404, "Challenge template not found.", "NOT_FOUND");
   },
   listCommunityParticipants: (request: Request, response: Response) => {
-    const participants = challengeService.listCommunityParticipants(request.params.templateId);
+    const templateId = typeof request.params.templateId === "string" ? request.params.templateId : "";
+    const participants = challengeService.listCommunityParticipants(templateId);
     return participants ? response.json(participants) : sendError(response, 404, "Challenge template not found.", "NOT_FOUND");
   },
   start: (request: Request, response: Response) => {
@@ -24,7 +26,8 @@ export const challengeController = {
     return session ? response.json(session) : sendError(response, 404, "Challenge template not found.", "NOT_FOUND");
   },
   cloneFromFeed: (request: Request, response: Response) => {
-    const session = challengeService.cloneFromFeed(request.params.feedItemId);
+    const feedItemId = typeof request.params.feedItemId === "string" ? request.params.feedItemId : "";
+    const session = challengeService.cloneFromFeed(feedItemId);
     return session ? response.json(session) : sendError(response, 404, "Public challenge post not found.", "NOT_FOUND");
   },
   saveProtocol: (request: Request, response: Response) => {
