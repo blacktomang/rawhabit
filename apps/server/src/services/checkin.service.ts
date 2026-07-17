@@ -26,7 +26,7 @@ export class CheckInService {
       transcriptionMode = "fallback";
     }
 
-    const coaching = await aiService.coach(transcript, template, active.currentDay, habitRepository.getPreference());
+    const coaching = await aiService.coach(transcript, template, active.currentDay, habitRepository.getPreference(), habitRepository.getSession().habitProtocol);
     const checkIn: CheckIn = { id: crypto.randomUUID(), challengeTemplateId: template.id, day: active.currentDay, transcript, caption: coaching.result.caption, visibility: input.visibility, mediaUrl: input.mediaUrl, coach: coaching.result, aiRun: { transcription: transcriptionMode, coaching: coaching.mode }, createdAt: new Date().toISOString() };
     habitRepository.addCheckIn(checkIn);
     const actionCard: ActionCard = { id: crypto.randomUUID(), checkInId: checkIn.id, title: "Your next small step", instruction: coaching.result.suggestedAction ?? template.strategyRules[0], expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: "active" };

@@ -3,6 +3,7 @@ import type {
   AICoachResponse,
   AgentPreference,
   ChallengeTemplate,
+  HabitProtocol,
 } from "@rawhabit/shared";
 import { env } from "../config/env";
 
@@ -35,6 +36,7 @@ export class AiService {
     template: ChallengeTemplate,
     day: number,
     preferences: AgentPreference,
+    habitProtocol: HabitProtocol | null,
   ) {
     if (!this.client)
       return {
@@ -52,6 +54,7 @@ export class AiService {
           day,
           totalDays: template.totalDays,
           strategyRules: template.strategyRules,
+          habitProtocol,
           explicitUserPreferences: preferences,
         }),
         text: {

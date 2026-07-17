@@ -27,4 +27,12 @@ export const challengeController = {
     const session = challengeService.cloneFromFeed(request.params.feedItemId);
     return session ? response.json(session) : sendError(response, 404, "Public challenge post not found.", "NOT_FOUND");
   },
+  saveProtocol: (request: Request, response: Response) => {
+    const trigger = typeof request.body?.trigger === "string" ? request.body.trigger.trim() : "";
+    const environmentChange = typeof request.body?.environmentChange === "string" ? request.body.environmentChange.trim() : "";
+    const minimumAction = typeof request.body?.minimumAction === "string" ? request.body.minimumAction.trim() : "";
+    if (!trigger || !environmentChange || !minimumAction) return sendError(response, 400, "Complete all Habit Protocol questions.", "VALIDATION_ERROR");
+    const protocol = challengeService.saveProtocol({ trigger: trigger.slice(0, 160), environmentChange: environmentChange.slice(0, 160), minimumAction: minimumAction.slice(0, 160) });
+    return protocol ? response.json(protocol) : sendError(response, 409, "Start a challenge before saving a Habit Protocol.", "INVALID_STATE");
+  },
 };

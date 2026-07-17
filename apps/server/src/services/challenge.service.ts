@@ -1,3 +1,4 @@
+import type { HabitProtocol } from "@rawhabit/shared";
 import { habitRepository } from "../repositories/habit.repository";
 
 export class ChallengeService {
@@ -19,6 +20,11 @@ export class ChallengeService {
     const template = source?.templateId && habitRepository.findTemplate(source.templateId);
     if (!source || !template) return null;
     return habitRepository.startChallenge(template, { sourceFeedItemId: source.id, displayName: source.authorName, challengeTitle: source.challengeTitle, clonedAt: new Date().toISOString() });
+  }
+  saveProtocol(input: Omit<HabitProtocol, "templateId" | "primaryPrinciple" | "updatedAt">) {
+    const template = habitRepository.getActiveTemplate();
+    if (!template) return null;
+    return habitRepository.saveHabitProtocol({ ...input, templateId: template.id, primaryPrinciple: template.protocolSetup.primaryPrinciple, updatedAt: new Date().toISOString() });
   }
 }
 

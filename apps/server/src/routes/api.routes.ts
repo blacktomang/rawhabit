@@ -13,6 +13,7 @@ apiRouter.get("/templates/:templateId/participants", challengeController.listCom
 apiRouter.get("/session", challengeController.getSession);
 apiRouter.get("/feed", challengeController.getFeed);
 apiRouter.post("/challenge/start", challengeController.start);
+apiRouter.post("/challenge/protocol", challengeController.saveProtocol);
 apiRouter.post("/templates/:templateId/clone", challengeController.clone);
 apiRouter.post("/feed/:feedItemId/clone", challengeController.cloneFromFeed);
 apiRouter.post("/check-ins", checkInController.create);
