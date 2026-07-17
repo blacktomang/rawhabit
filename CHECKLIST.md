@@ -51,7 +51,7 @@ This is the implementation order and test plan. Each item is small enough to com
 - [x] `POST /api/check-ins` returns `202 { jobId }` after saving the job.
 - [x] Implement `GET /api/check-in-jobs/:jobId/events` as an SSE stream.
 - [x] Emit `processing`, `transcript_ready`, `coach_ready`, `action_card_ready`, `complete`, and `failed` events.
-- [ ] Provide `GET /api/check-in-jobs/:jobId` polling fallback when SSE disconnects.
+- [x] Provide `GET /api/check-in-jobs/:jobId` polling fallback when SSE disconnects.
 - [x] Send audio to `whisper-1`; preserve a deterministic fallback when a key, media, or service is unavailable.
 - [x] Use the GPT-5.6 Responses API for one awaited structured result containing Saboteur assessment and Coach plan.
 - [x] Pass the active user’s Habit Protocol and explicit preferences into the agent context.

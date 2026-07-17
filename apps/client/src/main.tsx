@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { ActionCard, ChallengeTemplate, CheckIn, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport, Visibility } from "@rawhabit/shared";
+import type { ActionCard, ChallengeTemplate, CheckIn, CheckInJob, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport, Visibility } from "@rawhabit/shared";
 import "./styles.css";
 
 const getJson = <T,>(path: string) => fetch(path).then(async (response) => {
@@ -58,7 +58,7 @@ function App() {
         stream.addEventListener("coach_ready", stage("Building your next step…"));
         stream.addEventListener("complete", (event) => { const data = JSON.parse((event as MessageEvent).data) as { checkIn: CheckIn; actionCard: ActionCard }; setResult(data.checkIn); setSession((current) => current ? { ...current, activeActionCard: data.actionCard } : current); setProcessingStage(""); stream.close(); resolve(); });
         stream.addEventListener("failed", (event) => { setProcessingStage(""); stream.close(); reject(new Error(JSON.parse((event as MessageEvent).data).error ?? "Processing failed")); });
-        stream.onerror = () => { stream.close(); setProcessingStage(""); reject(new Error("Live coaching connection was interrupted. Please try again.")); };
+        stream.onerror = async () => { stream.close(); try { const current = await getJson<CheckInJob>(`/api/check-in-jobs/${job.jobId}`); if (current.status === "complete" && current.result) { setResult(current.result.checkIn); setSession((session) => session ? { ...session, activeActionCard: current.result!.actionCard } : session); setProcessingStage(""); resolve(); return; } if (current.status === "failed") throw new Error(current.error ?? "Processing failed"); throw new Error("Live coaching connection was interrupted. Please try again."); } catch (cause) { setProcessingStage(""); reject(cause); } };
       });
     } catch (cause) { setError((cause as Error).message); }
   };
