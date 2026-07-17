@@ -33,7 +33,7 @@ export class HabitRepository {
 
   listTemplates() { return templates; }
   findTemplate(id: string) { return templates.find((template) => template.id === id); }
-  getSession() { return this.session; }
+  getSession() { this.expireActionCard(); return this.session; }
   getFeed() { return this.feed; }
   findFeedItem(id: string) { return this.feed.find((item) => item.id === id); }
   getActiveTemplate() { return this.session.activeChallenge && this.findTemplate(this.session.activeChallenge.templateId); }
@@ -105,13 +105,18 @@ export class HabitRepository {
   findCheckIn(id: string) { return this.checkIns.find((checkIn) => checkIn.id === id); }
   addFeedItem(item: FeedItem) { this.feed = [item, ...this.feed]; }
   setActionCard(card: ActionCard | null) { this.session = { ...this.session, activeActionCard: card }; return card; }
-  proposeAgentAction(action: AgentAction) { this.session = { ...this.session, pendingAgentActions: [...this.session.pendingAgentActions, action] }; return action; }
+  private expireActionCard() {
+    const card = this.session.activeActionCard;
+    if (card?.status === "active" && Date.parse(card.expiresAt) <= Date.now()) this.session = { ...this.session, activeActionCard: { ...card, status: "expired" } };
+  }
+  proposeAgentAction(action: AgentAction) { this.session = { ...this.session, pendingAgentActions: [...this.session.pendingAgentActions, action] }; console.info(JSON.stringify({ event: "agent_action_proposed", actionId: action.id, kind: action.kind, checkInId: action.checkInId })); return action; }
   resolveAgentAction(id: string, accepted: boolean) {
     const action = this.session.pendingAgentActions.find((item) => item.id === id && item.status === "awaiting_confirmation");
     if (!action) return null;
     const resolved = { ...action, status: (accepted ? "executed" : "rejected") as AgentAction["status"] };
     if (accepted && action.kind === "request_encouragement") this.session = { ...this.session, user: { ...this.session.user, encouragementWelcome: true } };
     this.session = { ...this.session, pendingAgentActions: this.session.pendingAgentActions.filter((item) => item.id !== id) };
+    console.info(JSON.stringify({ event: "agent_action_resolved", actionId: action.id, kind: action.kind, status: resolved.status }));
     return resolved;
   }
   completeActionCard(id: string) {

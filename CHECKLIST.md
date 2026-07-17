@@ -9,10 +9,10 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P0 — Foundation
 
-- [ ] Run `bun install` from the repository root.
-- [ ] Add `.env.example` with `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6`, `OPENAI_TRANSCRIPTION_MODEL=whisper-1`, and `ALLOW_DEV_CHEAT`.
-- [ ] Confirm `bun dev` starts client and server.
-- [ ] Confirm `GET /health` returns `{ "status": "ok" }`.
+- [x] Run `bun install` from the repository root.
+- [x] Add `.env.example` with `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5.6`, `OPENAI_TRANSCRIPTION_MODEL=whisper-1`, and `ALLOW_DEV_CHEAT`.
+- [x] Confirm `bun dev` starts client and server.
+- [x] Confirm `GET /health` returns `{ "status": "ok" }`.
 - [x] Add current challenge, community, action-card, preference, and Habit Protocol contracts to `@rawhabit/shared`.
 - [x] Extend the in-memory repository with templates, seeded fictional feed cards, participant communities, action cards, and user preference records.
 - [x] Keep raw media/transcripts/assessments out of public feed queries.
@@ -97,16 +97,16 @@ This is the implementation order and test plan. Each item is small enough to com
 - [ ] Add loading/disabled/error states for every mutation.
 - [ ] Test narrow mobile layout, desktop layout, keyboard controls, and non-color status labels.
 - [ ] Use clearly fictional seed names/content only.
-- [ ] Add empty states for no active challenge, no participants, and no feed items.
+- [x] Add empty states for no active challenge, no participants, and no feed items.
 - [ ] Add SSE reconnect with polling fallback.
-- [ ] Expire stale action cards on read and show the expiry clearly.
-- [ ] Add request IDs and agent-action audit logs to server output.
+- [x] Expire stale action cards on read and show the expiry clearly.
+- [x] Add request IDs and agent-action audit logs to server output.
 
 ## Verification pass
 
 - [x] `bun run typecheck`
 - [x] `bun --filter '@rawhabit/client' build`
-- [ ] Test health, templates, session, community, feed, and clone endpoints.
+- [x] Test health, templates, session, community, feed, and clone endpoints.
 - [ ] Test camera granted, camera denied/audio fallback, retake, and transcript fallback.
 - [ ] Test private submission: no public feed update.
 - [ ] Test public publish: safe card appears without refresh.
