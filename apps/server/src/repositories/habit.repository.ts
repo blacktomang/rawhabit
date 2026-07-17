@@ -1,4 +1,4 @@
-import type { ActionCard, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
+import type { ActionCard, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, CheckInJob, CheckInJobEvent, CheckInJobStatus, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
 
 const templates: ChallengeTemplate[] = [
   { id: "quit-smoking-30", source: "official", version: 1, direction: "reduce", protocolSetup: { primaryPrinciple: "make_difficult", questions: [{ id: "trigger", label: "When is the hardest trigger?", options: ["With coffee", "After meals", "During stress", "In social situations"] }, { id: "environmentChange", label: "Where can we add friction?", options: ["Remove cigarettes and lighters", "Avoid the store route", "Keep gum and water visible", "Set a 10-minute delay"] }, { id: "minimumAction", label: "What replaces the urge?", options: ["Drink water", "Chew gum", "Text someone", "Take a short walk"] }] }, title: "30-Day Quit Smoking", totalDays: 30, description: "Build a smoke-free day, one honest check-in at a time.", strategyRules: ["Drink water and take a 10-minute walk after a craving.", "Text an accountability contact before buying cigarettes.", "If you slip, record it honestly and restart tomorrow without self-judgment."] },
@@ -17,6 +17,8 @@ export class HabitRepository {
     report: null,
   };
   private checkIns: CheckIn[] = [];
+  private checkInJobs = new Map<string, CheckInJob>();
+  private jobListeners = new Map<string, Set<(event: CheckInJobEvent) => void>>();
   private preferences = new Map<string, AgentPreference>([["maya", { acceptedActionTypes: [], rejectedActionTypes: [], constraints: [], recentFeedback: [] }]]);
   private participants: TemplateParticipant[] = [
     { userId: "alex", templateId: "gym-21", displayName: "Alex", joinedAt: now(), visibility: "listed", sourceFeedItemId: "seed-1" },
@@ -74,6 +76,27 @@ export class HabitRepository {
   }
 
   saveHabitProtocol(protocol: HabitProtocol) { this.session = { ...this.session, habitProtocol: protocol }; return protocol; }
+
+  createCheckInJob() {
+    const timestamp = now();
+    const job: CheckInJob = { id: crypto.randomUUID(), status: "queued", createdAt: timestamp, updatedAt: timestamp };
+    this.checkInJobs.set(job.id, job);
+    return job;
+  }
+  getCheckInJob(id: string) { return this.checkInJobs.get(id); }
+  updateCheckInJob(id: string, status: CheckInJobStatus, values: Partial<Pick<CheckInJob, "checkInId" | "error">> = {}) {
+    const job = this.checkInJobs.get(id);
+    if (!job) return null;
+    const next = { ...job, ...values, status, updatedAt: now() };
+    this.checkInJobs.set(id, next);
+    return next;
+  }
+  emitJobEvent(id: string, event: CheckInJobEvent) { this.jobListeners.get(id)?.forEach((listener) => listener(event)); }
+  subscribeToJob(id: string, listener: (event: CheckInJobEvent) => void) {
+    const listeners = this.jobListeners.get(id) ?? new Set<(event: CheckInJobEvent) => void>();
+    listeners.add(listener); this.jobListeners.set(id, listeners);
+    return () => { listeners.delete(listener); if (!listeners.size) this.jobListeners.delete(id); };
+  }
 
   addCheckIn(checkIn: CheckIn) { this.checkIns = [checkIn, ...this.checkIns]; }
   findCheckIn(id: string) { return this.checkIns.find((checkIn) => checkIn.id === id); }

@@ -23,6 +23,22 @@ export type Visibility = "private" | "public";
 export type FeedItemKind = "daily_log" | "graduate_post";
 export type ChangeDirection = "build" | "reduce";
 export type EnvironmentPrinciple = "make_obvious" | "make_easy" | "make_invisible" | "make_difficult";
+export type CheckInJobStatus = "queued" | "transcribing" | "coaching" | "complete" | "failed";
+export type CheckInJobEventType = "processing" | "transcript_ready" | "coach_ready" | "action_card_ready" | "complete" | "failed";
+
+export interface CheckInJob {
+  id: string;
+  status: CheckInJobStatus;
+  checkInId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CheckInJobEvent {
+  type: CheckInJobEventType;
+  data: Record<string, unknown>;
+}
 export type AgentActionKind = "inject_action_card" | "mutate_challenge_protocol" | "request_encouragement";
 export type AgentActionStatus = "proposed" | "awaiting_confirmation" | "executed" | "rejected" | "expired";
 
