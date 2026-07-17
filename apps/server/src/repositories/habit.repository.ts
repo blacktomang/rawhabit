@@ -1,9 +1,9 @@
-import type { ActionCard, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, FeedItem, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
+import type { ActionCard, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
 
 const templates: ChallengeTemplate[] = [
-  { id: "quit-smoking-30", source: "official", version: 1, title: "30-Day Quit Smoking", totalDays: 30, description: "Build a smoke-free day, one honest check-in at a time.", strategyRules: ["Drink water and take a 10-minute walk after a craving.", "Text an accountability contact before buying cigarettes.", "If you slip, record it honestly and restart tomorrow without self-judgment."] },
-  { id: "gym-21", source: "official", version: 1, title: "21-Day Gym Consistency", totalDays: 21, description: "Make movement a small, repeatable promise.", strategyRules: ["Lay out workout clothes the night before.", "Commit to just 10 minutes when motivation is low."] },
-  { id: "screen-free-14", source: "official", version: 1, title: "14-Day Screen-Free Nights", totalDays: 14, description: "Protect your wind-down ritual from the scroll.", strategyRules: ["Charge your phone outside the bedroom.", "Replace late scrolling with one page of a book."] },
+  { id: "quit-smoking-30", source: "official", version: 1, direction: "reduce", protocolSetup: { primaryPrinciple: "make_difficult", questions: [{ id: "trigger", label: "When is the hardest trigger?", options: ["With coffee", "After meals", "During stress", "In social situations"] }, { id: "environmentChange", label: "Where can we add friction?", options: ["Remove cigarettes and lighters", "Avoid the store route", "Keep gum and water visible", "Set a 10-minute delay"] }, { id: "minimumAction", label: "What replaces the urge?", options: ["Drink water", "Chew gum", "Text someone", "Take a short walk"] }] }, title: "30-Day Quit Smoking", totalDays: 30, description: "Build a smoke-free day, one honest check-in at a time.", strategyRules: ["Drink water and take a 10-minute walk after a craving.", "Text an accountability contact before buying cigarettes.", "If you slip, record it honestly and restart tomorrow without self-judgment."] },
+  { id: "gym-21", source: "official", version: 1, direction: "build", protocolSetup: { primaryPrinciple: "make_easy", questions: [{ id: "trigger", label: "What context works best?", options: ["After coffee", "Before work", "After work", "After dinner"] }, { id: "environmentChange", label: "What can you make easier tonight?", options: ["Lay out clothes", "Pack a gym bag", "Put shoes by the door", "Add it to my calendar"] }, { id: "minimumAction", label: "What is your smallest valid action?", options: ["Put on gym shoes", "Walk outside", "Move for 10 minutes", "Enter the gym"] }] }, title: "21-Day Gym Consistency", totalDays: 21, description: "Make movement a small, repeatable promise.", strategyRules: ["Lay out workout clothes the night before.", "Commit to just 10 minutes when motivation is low."] },
+  { id: "screen-free-14", source: "official", version: 1, direction: "reduce", protocolSetup: { primaryPrinciple: "make_invisible", questions: [{ id: "trigger", label: "When does scrolling start?", options: ["After dinner", "In bed", "During a break", "When I feel stressed"] }, { id: "environmentChange", label: "What can you remove from sight?", options: ["Charge phone outside bedroom", "Put phone in a drawer", "Turn on app limits", "Leave phone in another room"] }, { id: "minimumAction", label: "What replaces the scroll?", options: ["Read one page", "Make tea", "Write one line", "Listen to one song"] }] }, title: "14-Day Screen-Free Nights", totalDays: 14, description: "Protect your wind-down ritual from the scroll.", strategyRules: ["Charge your phone outside the bedroom.", "Replace late scrolling with one page of a book."] },
 ];
 
 const now = () => new Date().toISOString();
@@ -13,6 +13,7 @@ export class HabitRepository {
     user: { id: "maya", displayName: "Maya", status: "challenger", adaptiveProtocolEnabled: false, participantVisibility: "listed" },
     activeChallenge: null,
     activeActionCard: null,
+    habitProtocol: null,
     report: null,
   };
   private checkIns: CheckIn[] = [];
@@ -56,6 +57,7 @@ export class HabitRepository {
       user: { ...this.session.user, status: "challenger" },
       activeChallenge: { templateId: template.id, originTemplateId: template.id, initiatedBy, currentDay: 1, status: "active", startedAt: now() },
       activeActionCard: null,
+      habitProtocol: null,
       report: null,
     };
     this.checkIns = [];
@@ -70,6 +72,8 @@ export class HabitRepository {
     this.participants = [participant, ...this.participants];
     return participant;
   }
+
+  saveHabitProtocol(protocol: HabitProtocol) { this.session = { ...this.session, habitProtocol: protocol }; return protocol; }
 
   addCheckIn(checkIn: CheckIn) { this.checkIns = [checkIn, ...this.checkIns]; }
   addFeedItem(item: FeedItem) { this.feed = [item, ...this.feed]; }

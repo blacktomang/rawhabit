@@ -21,6 +21,8 @@ export interface AICoachResponse {
 export type ChallengeStatus = "active" | "completed";
 export type Visibility = "private" | "public";
 export type FeedItemKind = "daily_log" | "graduate_post";
+export type ChangeDirection = "build" | "reduce";
+export type EnvironmentPrinciple = "make_obvious" | "make_easy" | "make_invisible" | "make_difficult";
 export type AgentActionKind = "inject_action_card" | "mutate_challenge_protocol" | "request_encouragement";
 export type AgentActionStatus = "proposed" | "awaiting_confirmation" | "executed" | "rejected" | "expired";
 
@@ -28,10 +30,26 @@ export interface ChallengeTemplate {
   id: string;
   source: "official";
   version: number;
+  direction: ChangeDirection;
+  protocolSetup: HabitProtocolSetup;
   title: string;
   totalDays: number;
   description: string;
   strategyRules: string[];
+}
+
+export interface HabitProtocolSetup {
+  primaryPrinciple: EnvironmentPrinciple;
+  questions: Array<{ id: "trigger" | "environmentChange" | "minimumAction"; label: string; options: string[] }>;
+}
+
+export interface HabitProtocol {
+  templateId: string;
+  trigger: string;
+  environmentChange: string;
+  minimumAction: string;
+  primaryPrinciple: EnvironmentPrinciple;
+  updatedAt: string;
 }
 
 export interface ActiveChallenge {
@@ -153,5 +171,6 @@ export interface SessionState {
   user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous" };
   activeChallenge: ActiveChallenge | null;
   activeActionCard: ActionCard | null;
+  habitProtocol: HabitProtocol | null;
   report: TransformationReport | null;
 }
