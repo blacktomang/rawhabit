@@ -8,7 +8,7 @@ export class GraduationService {
     const template = habitRepository.getActiveTemplate();
     if (!template || !habitRepository.getSession().activeChallenge) return { error: "NO_ACTIVE_CHALLENGE" as const };
     if (!env.allowDevCheat) return { error: "DEV_CHEAT_DISABLED" as const };
-    return { session: habitRepository.completeChallenge(template.totalDays)! };
+    return { session: habitRepository.completeChallenge(template)! };
   }
   async createReport() {
     const template = habitRepository.getActiveTemplate();

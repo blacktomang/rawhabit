@@ -10,7 +10,7 @@ const now = () => new Date().toISOString();
 
 export class HabitRepository {
   private session: SessionState = {
-    user: { id: "maya", displayName: "Maya", status: "challenger", adaptiveProtocolEnabled: false, participantVisibility: "listed", encouragementWelcome: false },
+    user: { id: "maya", displayName: "Maya", status: "challenger", adaptiveProtocolEnabled: false, participantVisibility: "listed", encouragementWelcome: false, earnedBadges: [] },
     activeChallenge: null,
     activeActionCard: null,
     pendingAgentActions: [],
@@ -126,9 +126,12 @@ export class HabitRepository {
     this.setActionCard(next);
     return next;
   }
-  completeChallenge(totalDays: number) {
+  completeChallenge(template: ChallengeTemplate) {
     if (!this.session.activeChallenge) return null;
-    this.session = { ...this.session, user: { ...this.session.user, status: "graduate" }, activeChallenge: { ...this.session.activeChallenge, currentDay: totalDays, status: "completed" } };
+    const badgeKind: "habit_builder" | "pattern_breaker" = template.direction === "build" ? "habit_builder" : "pattern_breaker";
+    const badge = { id: `${template.id}-graduate`, kind: badgeKind, challengeTitle: template.title, earnedAt: now() };
+    const earnedBadges = this.session.user.earnedBadges.some((item) => item.id === badge.id) ? this.session.user.earnedBadges : [badge, ...this.session.user.earnedBadges];
+    this.session = { ...this.session, user: { ...this.session.user, status: "graduate", earnedBadges }, activeChallenge: { ...this.session.activeChallenge, currentDay: template.totalDays, status: "completed" } };
     return this.session;
   }
   saveReport(report: TransformationReport) { this.session = { ...this.session, report }; return report; }

@@ -185,8 +185,15 @@ export interface TransformationReport {
   generatedAt: string;
 }
 
+export interface EarnedBadge {
+  id: string;
+  kind: "habit_builder" | "pattern_breaker";
+  challengeTitle: string;
+  earnedAt: string;
+}
+
 export interface SessionState {
-  user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous"; encouragementWelcome: boolean };
+  user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous"; encouragementWelcome: boolean; earnedBadges: EarnedBadge[] };
   activeChallenge: ActiveChallenge | null;
   activeActionCard: ActionCard | null;
   pendingAgentActions: AgentAction[];
