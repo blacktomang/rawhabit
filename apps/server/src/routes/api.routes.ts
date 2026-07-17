@@ -22,6 +22,7 @@ apiRouter.get("/check-in-jobs/:id/events", checkInController.events);
 apiRouter.post("/check-ins/:id/publish", checkInController.publish);
 apiRouter.post("/check-ins/:id/feedback", agentController.feedback);
 apiRouter.post("/action-cards/:id/complete", agentController.completeActionCard);
+apiRouter.post("/agent-actions/:id/resolve", agentController.resolveProposal);
 apiRouter.post("/media", mediaController.uploadVideo);
 apiRouter.post("/challenge/dev-complete", graduationController.complete);
 apiRouter.post("/graduate/report", graduationController.report);

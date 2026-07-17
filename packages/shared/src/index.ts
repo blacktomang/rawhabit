@@ -185,9 +185,10 @@ export interface TransformationReport {
 }
 
 export interface SessionState {
-  user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous" };
+  user: { id: string; displayName: string; status: "challenger" | "graduate"; adaptiveProtocolEnabled: boolean; participantVisibility: "listed" | "anonymous"; encouragementWelcome: boolean };
   activeChallenge: ActiveChallenge | null;
   activeActionCard: ActionCard | null;
+  pendingAgentActions: AgentAction[];
   habitProtocol: HabitProtocol | null;
   report: TransformationReport | null;
 }

@@ -47,12 +47,12 @@ export class AiService {
     preferences: AgentPreference,
     habitProtocol: HabitProtocol | null,
   ) {
-    if (!this.client) return this.fallbackCoach(transcript, template);
+    if (!this.client) return this.fallbackCoach(transcript, template, preferences);
     try {
       const response = await this.client.responses.create({
         model: env.coachingModel,
         instructions:
-          "You are RawHabit's concise, empathetic Accountability Agent. First privately assess friction and risk. Then give exactly one practical, strategy-compatible action. Never diagnose, prescribe treatment, or claim emergency detection. For high or critical language, compassionately encourage a trusted person or local emergency/crisis support if immediate danger is possible.",
+          "You are RawHabit's concise, empathetic Accountability Agent. First privately assess friction and risk. Then give exactly one practical, strategy-compatible action. Respect explicit preferences: never repeat a previously rejected suggested action verbatim. Never diagnose, prescribe treatment, or claim emergency detection. For high or critical language, compassionately encourage a trusted person or local emergency/crisis support if immediate danger is possible.",
         input: JSON.stringify({
           transcript,
           challenge: template.title,
@@ -99,11 +99,13 @@ export class AiService {
           },
         },
       });
-      return this.validateCoachRun(JSON.parse(response.output_text || "{}"), "live");
+      const run = this.validateCoachRun(JSON.parse(response.output_text || "{}"), "live");
+      if (preferences.rejectedActionTypes.some((action) => this.normalise(action) === this.normalise(run.plan.suggestedAction))) throw new Error("Rejected action was proposed again");
+      return run;
     } catch (cause) {
       console.warn("Coach fallback:", cause);
       return {
-        ...this.fallbackCoach(transcript, template),
+        ...this.fallbackCoach(transcript, template, preferences),
       };
     }
   }
@@ -141,6 +143,7 @@ export class AiService {
 
   private isText(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
   private isStringList(value: unknown): value is string[] { return Array.isArray(value) && value.every((item) => this.isText(item)); }
+  private normalise(value: string) { return value.trim().toLocaleLowerCase().replace(/\s+/g, " "); }
   private wordCount(report: Pick<TransformationReport, "themes" | "strengths" | "carryForward">) { return [...report.themes, ...report.strengths, report.carryForward].join(" ").trim().split(/\s+/).filter(Boolean).length; }
 
   private fallbackReport(title: string, totalDays: number): TransformationReport {
@@ -150,8 +153,11 @@ export class AiService {
   private fallbackCoach(
     transcript: string,
     template: ChallengeTemplate,
+    preferences: AgentPreference = { acceptedActionTypes: [], rejectedActionTypes: [], constraints: [], recentFeedback: [] },
   ): CoachingRun {
-    const plan: CoachPlan = { caption: transcript.slice(0, 135) || "An honest check-in, one day at a time.", socraticPrompt: "What would make the next small step easier to start?", supportMessage: "You showed up for the hard moment. Keep your next step small and specific.", suggestedAction: template.strategyRules[0] };
+    const defaultAction = template.strategyRules[0];
+    const suggestedAction = preferences.rejectedActionTypes.some((action) => this.normalise(action) === this.normalise(defaultAction)) ? "Choose one smaller action you would be willing to try for two minutes." : defaultAction;
+    const plan: CoachPlan = { caption: transcript.slice(0, 135) || "An honest check-in, one day at a time.", socraticPrompt: "What would make the next small step easier to start?", supportMessage: "You showed up for the hard moment. Keep your next step small and specific.", suggestedAction };
     const assessment: SaboteurAssessment = { riskLevel: "low", frictionPatterns: ["A difficult moment was named without a specific barrier."], evidence: [transcript.slice(0, 160) || "User completed a check-in."], recommendedIntervention: "action_card" };
     return { assessment, plan, result: { riskLevel: assessment.riskLevel, caption: plan.caption, coachMessage: plan.supportMessage ?? plan.socraticPrompt, suggestedAction: plan.suggestedAction }, mode: "fallback" };
   }

@@ -1,4 +1,4 @@
-import type { ActionCard, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, CheckInJob, CheckInJobEvent, CheckInJobStatus, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
+import type { ActionCard, AgentAction, AgentPreference, ChallengeInitiator, ChallengeTemplate, CheckIn, CheckInJob, CheckInJobEvent, CheckInJobStatus, FeedItem, HabitProtocol, SessionState, TemplateCommunity, TemplateParticipant, TransformationReport } from "@rawhabit/shared";
 
 const templates: ChallengeTemplate[] = [
   { id: "quit-smoking-30", source: "official", version: 1, direction: "reduce", protocolSetup: { primaryPrinciple: "make_difficult", questions: [{ id: "trigger", label: "When is the hardest trigger?", options: ["With coffee", "After meals", "During stress", "In social situations"] }, { id: "environmentChange", label: "Where can we add friction?", options: ["Remove cigarettes and lighters", "Avoid the store route", "Keep gum and water visible", "Set a 10-minute delay"] }, { id: "minimumAction", label: "What replaces the urge?", options: ["Drink water", "Chew gum", "Text someone", "Take a short walk"] }] }, title: "30-Day Quit Smoking", totalDays: 30, description: "Build a smoke-free day, one honest check-in at a time.", strategyRules: ["Drink water and take a 10-minute walk after a craving.", "Text an accountability contact before buying cigarettes.", "If you slip, record it honestly and restart tomorrow without self-judgment."] },
@@ -10,9 +10,10 @@ const now = () => new Date().toISOString();
 
 export class HabitRepository {
   private session: SessionState = {
-    user: { id: "maya", displayName: "Maya", status: "challenger", adaptiveProtocolEnabled: false, participantVisibility: "listed" },
+    user: { id: "maya", displayName: "Maya", status: "challenger", adaptiveProtocolEnabled: false, participantVisibility: "listed", encouragementWelcome: false },
     activeChallenge: null,
     activeActionCard: null,
+    pendingAgentActions: [],
     habitProtocol: null,
     report: null,
   };
@@ -59,6 +60,7 @@ export class HabitRepository {
       user: { ...this.session.user, status: "challenger" },
       activeChallenge: { templateId: template.id, originTemplateId: template.id, initiatedBy, currentDay: 1, status: "active", startedAt: now() },
       activeActionCard: null,
+      pendingAgentActions: [],
       habitProtocol: null,
       report: null,
     };
@@ -103,6 +105,15 @@ export class HabitRepository {
   findCheckIn(id: string) { return this.checkIns.find((checkIn) => checkIn.id === id); }
   addFeedItem(item: FeedItem) { this.feed = [item, ...this.feed]; }
   setActionCard(card: ActionCard | null) { this.session = { ...this.session, activeActionCard: card }; return card; }
+  proposeAgentAction(action: AgentAction) { this.session = { ...this.session, pendingAgentActions: [...this.session.pendingAgentActions, action] }; return action; }
+  resolveAgentAction(id: string, accepted: boolean) {
+    const action = this.session.pendingAgentActions.find((item) => item.id === id && item.status === "awaiting_confirmation");
+    if (!action) return null;
+    const resolved = { ...action, status: (accepted ? "executed" : "rejected") as AgentAction["status"] };
+    if (accepted && action.kind === "request_encouragement") this.session = { ...this.session, user: { ...this.session.user, encouragementWelcome: true } };
+    this.session = { ...this.session, pendingAgentActions: this.session.pendingAgentActions.filter((item) => item.id !== id) };
+    return resolved;
+  }
   completeActionCard(id: string) {
     const card = this.session.activeActionCard;
     if (!card || card.id !== id || card.status !== "active") return null;

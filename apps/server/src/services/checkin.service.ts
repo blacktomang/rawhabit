@@ -1,4 +1,4 @@
-import type { ActionCard, CheckIn, FeedItem, Visibility } from "@rawhabit/shared";
+import type { ActionCard, AgentAction, CheckIn, FeedItem, Visibility } from "@rawhabit/shared";
 import { readMediaBody } from "../lib/http";
 import { habitRepository } from "../repositories/habit.repository";
 import { aiService } from "./ai.service";
@@ -37,6 +37,11 @@ export class CheckInService {
     habitRepository.addCheckIn(checkIn);
     const actionCard: ActionCard = { id: crypto.randomUUID(), checkInId: checkIn.id, title: "Your next small step", instruction: coaching.result.suggestedAction ?? template.strategyRules[0], expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), status: "active" };
     habitRepository.setActionCard(actionCard);
+    const proposedKind = coaching.assessment.recommendedIntervention === "protocol_change" ? "mutate_challenge_protocol" : coaching.assessment.recommendedIntervention === "support_prompt" ? "request_encouragement" : null;
+    if (proposedKind) {
+      const proposal: AgentAction = { id: crypto.randomUUID(), checkInId: checkIn.id, kind: proposedKind, status: "awaiting_confirmation", proposedPayload: proposedKind === "mutate_challenge_protocol" ? { message: "Review and adjust your Habit Protocol before the next check-in." } : { message: "Ask the community for generic encouragement on your safe progress card." }, createdAt: new Date().toISOString() };
+      habitRepository.proposeAgentAction(proposal);
+    }
     input.onProgress?.("action_card_ready", { actionCardId: actionCard.id });
     let feedItem: FeedItem | undefined;
     if (input.visibility === "public") {

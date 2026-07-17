@@ -19,4 +19,9 @@ export const agentController = {
     // acknowledgement explicit so clients never mistake this for a no-op.
     return response.json({ preference, storedForNextCoachRun: true });
   },
+  resolveProposal: (request: Request, response: Response) => {
+    const accepted = request.body?.accepted === true;
+    const action = habitRepository.resolveAgentAction(request.params.id as string, accepted);
+    return action ? response.json(action) : sendError(response, 404, "Agent proposal not found.", "NOT_FOUND");
+  },
 };
