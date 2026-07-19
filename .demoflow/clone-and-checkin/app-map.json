@@ -1,0 +1,14 @@
+{
+  "frameworkHints": [],
+  "scripts": [
+    "dev",
+    "dev:client",
+    "dev:server",
+    "build",
+    "typecheck"
+  ],
+  "routes": [],
+  "testIds": [],
+  "labels": [],
+  "fingerprint": "d39f2cd22958282d079e65ca391ace895cf8cb3b12e7eb6ff2ddf7cbd49dee96"
+}

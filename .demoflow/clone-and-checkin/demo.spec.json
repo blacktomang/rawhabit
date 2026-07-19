@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "id": "clone-and-checkin",
+  "title": "Clone a habit and check in",
+  "goal": "Join a community habit, save a simple protocol, and submit a private daily check-in.",
+  "startPath": "/",
+  "steps": [
+    {
+      "id": "join-community-habit",
+      "target": {
+        "role": "button",
+        "name": "Join this habit",
+        "occurrence": 1
+      },
+      "tooltip": {
+        "title": "Join a habit",
+        "body": "Start from a real community check-in. This copies its habit into your space."
+      },
+      "advance": {
+        "type": "click-target"
+      }
+    },
+    {
+      "id": "save-protocol",
+      "target": {
+        "role": "button",
+        "name": "Save my protocol"
+      },
+      "tooltip": {
+        "title": "Keep the defaults",
+        "body": "The starter protocol is already selected. Save it to reach today’s check-in."
+      },
+      "advance": {
+        "type": "click-target"
+      }
+    },
+    {
+      "id": "add-checkin-note",
+      "target": {
+        "label": "Demo transcript / recording note"
+      },
+      "tooltip": {
+        "title": "Write an honest note",
+        "body": "Add a short check-in here—the demo-safe alternative to recording audio or video."
+      },
+      "advance": {
+        "type": "manual"
+      }
+    },
+    {
+      "id": "submit-checkin",
+      "target": {
+        "role": "button",
+        "name": "Save check-in & get coaching"
+      },
+      "tooltip": {
+        "title": "Get coaching",
+        "body": "Submit the private check-in to receive a tailored next step."
+      },
+      "advance": {
+        "type": "click-target"
+      }
+    }
+  ],
+  "metadata": {
+    "appFingerprint": "d39f2cd22958282d079e65ca391ace895cf8cb3b12e7eb6ff2ddf7cbd49dee96",
+    "savedAt": "2026-07-19T18:47:58.433Z"
+  }
+}
