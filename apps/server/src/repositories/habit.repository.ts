@@ -7,6 +7,8 @@ const templates: ChallengeTemplate[] = [
 ];
 
 const now = () => new Date().toISOString();
+const challengeDate = () => now().slice(0, 10);
+const nextDate = (date: string) => new Date(Date.parse(`${date}T00:00:00.000Z`) + 86_400_000).toISOString().slice(0, 10);
 
 export class HabitRepository {
   private session: SessionState = {
@@ -58,7 +60,7 @@ export class HabitRepository {
   startChallenge(template: ChallengeTemplate, initiatedBy?: ChallengeInitiator) {
     this.session = {
       user: { ...this.session.user, status: "challenger" },
-      activeChallenge: { templateId: template.id, originTemplateId: template.id, initiatedBy, currentDay: 1, status: "active", startedAt: now() },
+      activeChallenge: { templateId: template.id, originTemplateId: template.id, initiatedBy, currentDay: 1, currentDate: challengeDate(), status: "active", startedAt: now() },
       activeActionCard: null,
       pendingAgentActions: [],
       habitProtocol: null,
@@ -102,6 +104,7 @@ export class HabitRepository {
 
   addCheckIn(checkIn: CheckIn) { this.checkIns = [checkIn, ...this.checkIns]; }
   listCheckIns() { return this.checkIns; }
+  listActiveChallengeCheckIns() { const active = this.session.activeChallenge; return active ? this.checkIns.filter((checkIn) => checkIn.challengeTemplateId === active.templateId).sort((a, b) => a.day - b.day || a.createdAt.localeCompare(b.createdAt)) : []; }
   findCheckIn(id: string) { return this.checkIns.find((checkIn) => checkIn.id === id); }
   addFeedItem(item: FeedItem) { this.feed = [item, ...this.feed]; }
   setActionCard(card: ActionCard | null) { this.session = { ...this.session, activeActionCard: card }; return card; }
@@ -133,6 +136,15 @@ export class HabitRepository {
     const earnedBadges = this.session.user.earnedBadges.some((item) => item.id === badge.id) ? this.session.user.earnedBadges : [badge, ...this.session.user.earnedBadges];
     this.session = { ...this.session, user: { ...this.session.user, status: "graduate", earnedBadges }, activeChallenge: { ...this.session.activeChallenge, currentDay: template.totalDays, status: "completed" } };
     return this.session;
+  }
+  advanceChallengeDay(template: ChallengeTemplate) {
+    const active = this.session.activeChallenge;
+    if (!active || active.status !== "active") return { error: "NO_ACTIVE_CHALLENGE" as const };
+    const hasTodayCheckIn = this.checkIns.some((checkIn) => checkIn.challengeTemplateId === template.id && checkIn.day === active.currentDay && checkIn.challengeDate === active.currentDate);
+    if (!hasTodayCheckIn) return { error: "CHECK_IN_REQUIRED" as const };
+    if (active.currentDay >= template.totalDays) return { session: this.completeChallenge(template)! };
+    this.session = { ...this.session, activeChallenge: { ...active, currentDay: active.currentDay + 1, currentDate: nextDate(active.currentDate) } };
+    return { session: this.session };
   }
   saveReport(report: TransformationReport) { this.session = { ...this.session, report }; return report; }
 }

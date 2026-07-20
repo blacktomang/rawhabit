@@ -74,6 +74,7 @@ export interface ActiveChallenge {
   originTemplateId: string;
   initiatedBy?: ChallengeInitiator;
   currentDay: number;
+  currentDate: string;
   status: ChallengeStatus;
   startedAt: string;
 }
@@ -146,6 +147,7 @@ export interface CheckIn {
   id: string;
   challengeTemplateId: string;
   day: number;
+  challengeDate: string;
   transcript: string;
   caption: string;
   visibility: Visibility;

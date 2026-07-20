@@ -83,6 +83,10 @@ This is the implementation order and test plan. Each item is small enough to com
 
 ## P0 — Graduate loop
 
+- [x] Replace instant completion with challenge-date progression that requires a daily check-in.
+- [x] Add a private chronological review of the user’s daily check-ins.
+- [x] Show the active agent action card and pending consent proposal at the top of Today.
+
 - [x] Guard `POST /api/challenge/dev-complete` to non-production or `ALLOW_DEV_CHEAT=true`.
 - [x] Visually separate the Dev Cheat from normal controls.
 - [x] Complete the challenge: set final day, completed status, and Graduate profile status.

@@ -40,7 +40,7 @@ Without `OPENAI_API_KEY`, choose the Demo transcript field in the recorder and t
 2. Submit a demo transcript about a difficult moment.
 3. Review the private coach response, then share the safe caption to the feed.
 4. Clone a feed challenge and show its initiator attribution.
-5. Use the demo completion control, generate a report, and publish a Graduate post.
+5. Use **Advance to next day** after a check-in; the virtual challenge date and private journey progress together. On the final completed day, generate a report and publish a Graduate post.
 
 ## Architecture
 

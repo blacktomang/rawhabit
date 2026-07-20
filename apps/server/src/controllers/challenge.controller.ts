@@ -38,4 +38,10 @@ export const challengeController = {
     const protocol = challengeService.saveProtocol({ trigger: trigger.slice(0, 160), environmentChange: environmentChange.slice(0, 160), minimumAction: minimumAction.slice(0, 160) });
     return protocol ? response.json(protocol) : sendError(response, 409, "Start a challenge before saving a Habit Protocol.", "INVALID_STATE");
   },
+  advanceDay: (_request: Request, response: Response) => {
+    const result = challengeService.advanceDay();
+    if ("error" in result) return sendError(response, 409, result.error === "CHECK_IN_REQUIRED" ? "Finish today’s private check-in before advancing the challenge date." : "Start an active challenge before advancing.", "INVALID_STATE");
+    return response.json(result.session);
+  },
+  listJourney: (_request: Request, response: Response) => response.json(challengeService.listJourney()),
 };

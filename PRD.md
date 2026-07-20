@@ -30,7 +30,7 @@ Maya, 27, is trying to quit smoking. After a craving, she records a candid 20-se
 ```text
 Choose a template → join its community → record a private raw check-in
 → transcribe → Saboteur assessment → Coach plan/action card
-→ optionally share a safe progress update → complete → Graduate report/post
+→ complete one small action → advance the challenge date → Graduate report/post
 ```
 
 ## Functional requirements
@@ -53,6 +53,10 @@ Official templates declare a change direction. Building a good habit makes the d
 
 Users record 15–30 seconds with browser `MediaRecorder`, preview or retake it, and submit it as private by default. Audio-only and a development transcript fallback support demo reliability. Users may explicitly publish a safe caption/progress card after reviewing the agent response.
 
+Each active challenge carries a current **challenge date**. After a check-in is recorded for that date, the user can advance to the next day; on the final day, advancing earns Graduate status. The demo uses this virtual date progression rather than instant completion, so each recorded day has real private data.
+
+Users can open **Review check-ins** to see their private chronological journey: Day/date, caption, coach response, Socratic reflection, and action-card context. This review never appears in the public feed.
+
 ### 3. Accountability Agent
 
 The server transcribes audio with `whisper-1`, then calls GPT-5.6 through the Responses API. The agent does not generate template onboarding questions; it receives the saved Habit Protocol and personalizes it after real check-ins and explicit feedback. The experience has two explainable stages in one awaited agent response:
@@ -74,7 +78,7 @@ The feed begins with fictional seeded cards and includes explicitly public user 
 
 ### 6. Completion and Graduate status
 
-The demo-only Dev Cheat completes an active challenge. Completion changes the participant to Graduate, generates a short transformation report from their summaries, and unlocks the victory composer. A Graduate post appears in the public feed when the user publishes it.
+After a final-day check-in, advancing the challenge date changes the participant to Graduate, generates a short transformation report from their summaries, and unlocks the victory composer. A Graduate post appears in the public feed when the user publishes it.
 
 ## Safety and privacy boundaries
 
@@ -86,7 +90,7 @@ The demo-only Dev Cheat completes an active challenge. Completion changes the pa
 
 ## MVP boundaries
 
-Included: hardcoded session, in-memory data, seeded fictional feed, local media storage, development fallback, dev completion control, and an optional generic public encouragement signal.
+Included: hardcoded session, in-memory data, seeded fictional feed, local media storage, development fallback, virtual challenge-date progression, private journey review, and an optional generic public encouragement signal.
 
 Excluded: authentication, database persistence, real DMs/comments/likes, real moderation, Discord integration, medical/crisis response, and automatic public sharing.
 
@@ -98,7 +102,7 @@ Excluded: authentication, database persistence, real DMs/comments/likes, real mo
 4. Start or clone an Official template, complete its 2–3 Habit Protocol setup questions, and show the personal protocol.
 5. Publish a harmless progress update and show it atop the feed.
 6. Clone a template and show its initiator attribution plus community count.
-7. Use Dev Cheat, generate the Graduate report, and publish a victory post.
+7. Advance through the final completed challenge date, generate the Graduate report, and publish a victory post.
 
 ## Build Week submission readiness
 

@@ -26,6 +26,11 @@ export class ChallengeService {
     if (!template) return null;
     return habitRepository.saveHabitProtocol({ ...input, templateId: template.id, primaryPrinciple: template.protocolSetup.primaryPrinciple, updatedAt: new Date().toISOString() });
   }
+  advanceDay() {
+    const template = habitRepository.getActiveTemplate();
+    return template ? habitRepository.advanceChallengeDay(template) : { error: "NO_ACTIVE_CHALLENGE" as const };
+  }
+  listJourney() { return habitRepository.listActiveChallengeCheckIns(); }
 }
 
 export const challengeService = new ChallengeService();

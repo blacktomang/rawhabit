@@ -203,6 +203,8 @@ The model has these narrow function tools:
 | `POST` | `/api/challenge/start` | `{ templateId }` → Day 1 `SessionState` |
 | `POST` | `/api/feed/:feedItemId/clone` | Start source template and save `ChallengeInitiator` |
 | `POST` | `/api/challenge/protocol` | Save the user-edited Habit Protocol after Official setup |
+| `POST` | `/api/challenge/advance-day` | Requires a private check-in for the current challenge date; advances or graduates on the final day |
+| `GET` | `/api/challenge/journey` | Private chronological check-ins for the active challenge |
 | `POST` | `/api/media` | Raw WebM/MP4 storage; 15 MB maximum |
 | `POST` | `/api/check-ins` | Media or demo transcript; returns check-in, card, pending action |
 | `POST` | `/api/check-ins/:id/publish` | Explicitly creates public feed item |
@@ -210,7 +212,6 @@ The model has these narrow function tools:
 | `POST` | `/api/agent-actions/:id/confirm` | Applies permitted protocol change |
 | `POST` | `/api/agent-actions/:id/decline` | Rejects proposed action |
 | `POST` | `/api/encouragement-requests/:id/confirm` | Publishes a generic opted-in encouragement signal |
-| `POST` | `/api/challenge/dev-complete` | Non-production only, completes active challenge |
 | `POST` | `/api/graduate/report` | Creates/caches report |
 | `POST` | `/api/graduate/post` | Validated 1–500 character victory post |
 
@@ -220,6 +221,10 @@ Errors are `{ error: string, code: "VALIDATION_ERROR" | "NOT_FOUND" | "INVALID_S
 
 ```text
 App
+├─ Today
+│  ├─ ActiveActionCard (persistent while active)
+│  ├─ PendingAgentProposal (directly below card)
+│  └─ DailyCheckIn
 ├─ FeedColumn
 │  └─ FeedItemCard
 │     ├─ CloneTemplateButton
@@ -229,15 +234,13 @@ App
    │  └─ HabitProtocolSetup (pre-authored questions, not AI-generated)
    ├─ ChallengeDashboard
    │  ├─ ProgressMeter
+   │  ├─ ChallengeDateAndAdvanceControl
+   │  ├─ ReviewCheckInsButton
    │  ├─ ChallengeLineage
    │  ├─ HabitProtocolCard (user-editable)
    │  ├─ TemplateCommunityButton (avatar stack + count)
    │  ├─ TemplateCommunitySheet
    │  └─ ActiveActionCard
-   ├─ DailyCheckIn
-   │  ├─ MediaRecorder
-   │  ├─ RecordingPreviewAndRetake
-   │  └─ VisibilitySelector
    ├─ AccountabilityResult
    │  ├─ CoachPlanCard
    │  ├─ ProtocolChangeSheet
@@ -245,6 +248,7 @@ App
    └─ GraduateView
       ├─ TransformationReport
       └─ VictoryComposer
+└─ JourneySheet (private chronological check-in review)
 ```
 
 Public cards must never render `assessment`, evidence, risk level, or raw transcript. The community sheet lists only opted-in profile basics and can display a generic current-day value only if that option is later added explicitly. Template cards display the `Official` badge for their curated, versioned protocol.
